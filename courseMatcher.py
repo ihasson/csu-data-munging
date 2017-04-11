@@ -56,6 +56,13 @@ def justClean(string):
     cname.strip()
     return cname
 
+## 
+#   Takes a string and finds the closest match from a list of strings.
+#   Bounds on what is too distant can be set by changing the starting value
+#   of bestdistance.
+#
+# The knownclasses, bestMatch, and bestdistance variables should all
+# be changed to fit the needs of the user.
 def findClosest(string):
     knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
                     'pre-calculus', 'trigenometry', 'statistics',
