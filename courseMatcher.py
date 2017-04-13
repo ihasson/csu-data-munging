@@ -18,9 +18,30 @@
 # 
 
 
-from fuzzywuzzy import StringMatcher as strM
+#from fuzzywuzzy import StringMatcher as strM
 import re
 import sys
+
+def levenshteinDist(stringA,stringB):
+    matrix = [[None for col in range(0,len(stringB)+1)] 
+                for row in range(0,len(stringA)+1)]
+    for col in range(0,len(stringB)+1,1) :
+        matrix[0][col] = col
+    for row in range(0,len(stringA)+1,1) :
+        matrix[row][0] = row
+
+    for col in range(1,len(stringB)+1) :
+        for row in range(1,len(stringA)+1):
+            l = 1 if stringB[col-1] != stringA[row-1] else 0
+            up = matrix[row][col-1] +1
+            left = matrix[row-1][col] +1
+            upleft = matrix[row-1][col-1] + l
+            matrix[row][col] = min((upleft,up,left))
+   
+    #print matrix 
+    a = matrix[len(stringA)][len(stringB)]
+    #print a
+    return a
 
 # read data and also find what appears to be the closest match for the 
 # course name.
@@ -68,9 +89,9 @@ def findClosest(string):
                     'pre-calculus', 'trigenometry', 'statistics',
                     'math analysis', 'trig/alg', 'alg/trig', 'algebra']
     bestMatch = "unknown"
-    bestdistance = strM.distance(bestMatch,string)
+    bestdistance = levenshteinDist(bestMatch,string)
     for c in knownclasses:
-        dist = strM.distance(c,string) 
+        dist = levenshteinDist(c,string) 
         if dist < bestdistance :
             bestdistance = dist
             bestMatch = c
