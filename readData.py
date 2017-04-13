@@ -40,7 +40,6 @@ def read_High_School_Data(filesList):
             linenum = 0 # for errorprinting
             #format studentid==|course|??|??|
             for line in f.readlines():
-                print(line)
                 linenum +=1
                 line = line.rstrip()
                 idstring,rest = line.split("==|")
@@ -80,7 +79,7 @@ def readAndClean(fileList):
                 cname.strip()
                 closest = findClosest(cname)
                 dataset.append((vals,cname,closest))
-                print( cname +"\t" + closest )
+                #print( cname +"\t" + closest )
     return dataset
 
 def justClean(string):
@@ -122,7 +121,9 @@ def read_a_sequence(line):
             cInfo.append(fields[(4*x)+2])
             cInfo.append(fields[(4*x)+3])
             cInfoList.append(cInfo)
-        return (sid,cInfoList)
+        student = Student(sid)
+        student.collegeSeq = cInfoList
+        return student
     else:
         print("Malformed Course Sequence! Not enough fields.")
         return None
@@ -131,12 +132,12 @@ def read_a_sequence(line):
 def mergeHSandColSeq(hs,cseq):
     mergedDict = {}
     for student in hs.keys():
-        if student in cseq:
-            if cseq[student].collegeSeq and hs[student].hsCourses:
-                csunStudent = Student(student)
-                csunStudent.hsCourses = hs[student].hsCourses
-                csunStudent.collegeSeq = cseq[student].collegeSeq
-                mergedDict[student] = csunStudent
+        if student in cseq.keys():
+        
+            csunStudent = Student(student)
+            csunStudent.hsCourses = hs[student].hsCourses
+            csunStudent.collegeSeq = cseq[student].collegeSeq
+            mergedDict[student] = csunStudent
     return mergedDict
 
 def get_sequences(fileName):
@@ -147,6 +148,22 @@ def get_sequences(fileName):
     return sList
 
 def constructDictionary():
+    hsdict = {}
+    seqdict = {}
+    highschoolfiles = ['encrypted-grant-grades.txt',
+            'encrypted-poly-grades.txt',
+            'encrypted-taft-grades.txt']
+    seqFile = 'Encrypted-Math-Sequences.txt'
+    highschooldata = read_High_School_Data(highschoolfiles)
+    seqList = get_sequences(seqFile)
+    for student in highschooldata:
+        hsdict[student.sid] = student
+    for student in seqList:
+        seqdict[student.sid] = student
+    #return mergeHSandColSeq(hsdict,seqdict)
+    return (hsdict,seqdict)
+
+def oldConstructDictionary():
     studentDir = {}
     highschoolfiles = ['encrypted-grant-grades.txt',
             'encrypted-poly-grades.txt',
@@ -170,3 +187,4 @@ def showall(d):
         print(a.sid)
         print(a.hsCourses)
         print(a.collegeSeq)
+
