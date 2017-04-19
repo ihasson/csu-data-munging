@@ -34,6 +34,11 @@ class Student:
         self.sid = sid
         self.hsCourses = []
         self.collegeSeq = []
+    
+    def addHsCourses(self, crapString):
+        return       
+
+
 
 # Returns a list of Students with their highschool classes.
 # Will make the adding students to dictionary and figuring out what the
