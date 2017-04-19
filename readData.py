@@ -22,6 +22,12 @@ from fuzzywuzzy import StringMatcher as strM
 import re
 import sys
 
+# For mapping highschool course names to integers.
+# The assumed scoring system is the sum of the integers with 0 for things 
+# not in the dictionary or if there was never anything to begin with
+hsClassesDict = {'algebra 1':2, 'algebra 2':8, 'geometry':4, 'calculus':64,
+        'pre-calculus':16, 'trigenometry':16, 'statistics':32,
+        'math analysis':16, 'trig/alg':16, 'alg/trig':16, 'algebra':0}
 class Student:
 
     def __init__(self,sid):
@@ -55,7 +61,10 @@ def read_High_School_Data(filesList):
                         "line "+str(linenum)+ " in " + filename)
                 else : 
                     for i in range(int(len(vals)/3)):
-                        acourse = (vals[3*i+0], vals[3*i+1],vals[3*i+2])
+                        acourse = (
+                                    findClosest(justClean(vals[3*i+0])), 
+                                    vals[3*i+1],
+                                    vals[3*i+2])
                         newStudent.hsCourses.append(acourse)
                     studentList.append(newStudent)
     return studentList
@@ -82,6 +91,7 @@ def readAndClean(fileList):
                 #print( cname +"\t" + closest )
     return dataset
 
+#clean hsdata
 def justClean(string):
     cname = string
     cname = cname.replace('II','2')
@@ -94,6 +104,7 @@ def justClean(string):
     cname.strip()
     return cname
 
+#findClosest highschool course name
 def findClosest(string):
     knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
                     'pre-calculus', 'trigenometry', 'statistics',
@@ -107,6 +118,7 @@ def findClosest(string):
             bestMatch = c
     return bestMatch
 
+# for college sequences
 def read_a_sequence(line):
     line = line.strip()
     sid,seq = line.split("==|")
@@ -161,7 +173,7 @@ def constructDictionary():
     for student in seqList:
         seqdict[student.sid] = student
     #return mergeHSandColSeq(hsdict,seqdict)
-    return (hsdict,seqdict)
+    return hsdict,seqdict
 
 def oldConstructDictionary():
     studentDir = {}
@@ -187,4 +199,16 @@ def showall(d):
         print(a.sid)
         print(a.hsCourses)
         print(a.collegeSeq)
+
+#Maps a list of highschool courses to integer values via the 
+#global hsClassesDict.
+#Returns the sum of the class values if multiple in input
+#Emptylists and unknownkeys are zero.
+def multiHSCtoNum(hsClasses):
+    resultRank = 0
+    for e in hsClasses:
+        if e in hsClassesDict:
+            rank = hsClassesDict[e]
+            resultRank = resultRank + rank
+    return bestRank
 
