@@ -21,25 +21,83 @@
 from fuzzywuzzy import StringMatcher as strM
 import re
 import sys
+import matplotlib.pyplot as plt
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
 # not in the dictionary or if there was never anything to begin with
-hsClassesDict = {'algebra 1':2, 'algebra 2':8, 'geometry':4, 'calculus':64,
-        'pre-calculus':16, 'trigenometry':16, 'statistics':32,
-        'math analysis':16, 'trig/alg':16, 'alg/trig':16, 'algebra':0}
-class Student:
+hsClassesDict = {
+        'algebra 1':2,  'algebra 2':8,  'geometry':4,   'calculus':64,
+        'pre-calculus':16,  'trigenometry':16,  'statistics':32,
+        'math analysis':16,     'trig/alg':16,  'alg/trig':16,  'algebra':0,
+        'unknown':-1
+        }
+gradesMap = {   'A':4.0,'A-':4, #need to update the grade values
+                'B+':3,'B':3,'B-':3,
+                'C+':2,'C':2,'C-':2, 
+                'D+':1,'D':1,'D-':1,
+                'F':0, 'W':0, 
+                'CR':2, 'NC':0, 'RP':1 # I need to find out what RP means
+                }
 
+class Student:
+    
     def __init__(self,sid):
         self.sid = sid
-        self.hsCourses = []
+        self.hsCourses = [] # each course has pattern [name,grade1,grade2]
+        self.hsOldCNames = [] 
         self.collegeSeq = []
-    
-    def addHsCourses(self, crapString):
-        return       
 
+# returns a list of courseNames
+    def hs_course_names(self):
+        lsOfCnames = []
+        for course in self.hsCourses:
+            lsOfCnames.append(course[0])
+        return lsOfCnames
 
+# returns the (guessed) valuation of how much math the student did
+    def hs_score(self):
+        return multiHSCtoNum(self.hs_course_names())
 
+# extract some number from the college course sequences to use as a feature
+    def col_seqScore(self):
+        best = 0
+        for course in self.collegeSeq :
+            if grade(course) in gradesMap:
+                cnum = int(re.findall('[0-9]+',cname(course))[0])
+                if gradesMap[grade(course)] > 0 and cnum > best:
+                    best = cnum
+        return best
+# extracts the number from the name of a course
+    def colCourseNameNum(self):
+        cnum = int(re.findall('[0-9]+',cname)
+
+# some functions to help find info in the collegeSeq's
+def term(colCor): return colCor[0]
+def cname(colCor): return colCor[1]
+def units(colCor): return colCor[2]
+def grade(colCor): return colCor[3]
+
+# Takes a course from the college sequences and returns the info from the 
+# term field.
+def readTerm(courseInf):
+    century = {'0':1900, '2':2000}
+    semesterdict = {'1':'winter',   '3':'spring',   
+                    '5':'summer',   '7':'fall'
+                    }
+    termStr = courseInf[0]
+    cent = termStr[0]
+    year = termStr[1:3]
+    semester = termStr[3]
+    return (century[cent] + int(year) , semesterdict[semester]) 
+
+# extracts the number from the name of a course
+def colCourseToNum(cname):
+    cnum = int(re.findall('[0-9]+',cname)
+# extracts the number from the name of a course
+def colCourseToNum(cname):
+    cnum = int(re.findall('[0-9]+',cname)
+    return cnum
 # Returns a list of Students with their highschool classes.
 # Will make the adding students to dictionary and figuring out what the
 # courseString maps to in different function.
@@ -58,18 +116,19 @@ def read_High_School_Data(filesList):
                 vals = []
                 vals = rest.split('|')
                 #since each course should have a name and <=two grades
-                if (len(vals)-1)%3 != 0:
-                    #print(vals)
+                if (len(vals)%4) != 0:
+                    print(vals)
                     errors += 1
-                elif False:
                     print( "Misformatted Input!  " + 
                         "line "+str(linenum)+ " in " + filename)
                 else : 
-                    for i in range(int(len(vals)/3)):
+                    for i in range(int(len(vals)/4)):
+                        newStudent.hsOldCNames.append(vals[4*i+0])
+                    #    if i > 1: print(idstring + "    "+ str(i))
                         acourse = (
-                                    findClosest(justClean(vals[3*i+0])), 
-                                    vals[3*i+1],
-                                    vals[3*i+2])
+                                    findClosest(cleanHSCstr(vals[4*i+0])), 
+                                    vals[4*i+1],
+                                    vals[4*i+2])
                         newStudent.hsCourses.append(acourse)
                     studentList.append(newStudent)
     return studentList
@@ -97,7 +156,7 @@ def readAndClean(fileList):
     return dataset
 
 #clean hsdata
-def justClean(string):
+def cleanHSCstr(string):
     cname = string
     cname = cname.replace('II','2')
     cname = cname.lower()
@@ -115,7 +174,7 @@ def findClosest(string):
                     'pre-calculus', 'trigenometry', 'statistics',
                     'math analysis', 'trig/alg', 'alg/trig', 'algebra']
     bestMatch = "unknown"
-    bestdistance = strM.distance(bestMatch,string)
+    bestdistance = 4
     for c in knownclasses:
         dist = strM.distance(c,string) 
         if dist < bestdistance :
@@ -153,6 +212,7 @@ def mergeHSandColSeq(hs,cseq):
         
             csunStudent = Student(student)
             csunStudent.hsCourses = hs[student].hsCourses
+            csunStudent.hsOldCNames = hs[student].hsOldCNames
             csunStudent.collegeSeq = cseq[student].collegeSeq
             mergedDict[student] = csunStudent
     return mergedDict
@@ -177,8 +237,7 @@ def constructDictionary():
         hsdict[student.sid] = student
     for student in seqList:
         seqdict[student.sid] = student
-    #return mergeHSandColSeq(hsdict,seqdict)
-    return hsdict,seqdict
+    return mergeHSandColSeq(hsdict,seqdict)
 
 def oldConstructDictionary():
     studentDir = {}
@@ -215,5 +274,27 @@ def multiHSCtoNum(hsClasses):
         if e in hsClassesDict:
             rank = hsClassesDict[e]
             resultRank = resultRank + rank
-    return bestRank
+    return resultRank
 
+def plotData(studentInfo):
+    x = []
+    y = []
+    for student in studentInfo:
+        x.append(studentInfo[student].hs_score())
+        y.append(studentInfo[student].col_seqScore())
+        if studentInfo[student].hs_score() > 400: print(student)
+    plt.figure()
+    plt.title('Graph')
+    plt.xlabel('High School')
+    plt.ylabel('College')
+    plt.plot(x,y,'k.')
+    plt.show()
+
+def searchByHsScore(dictionary,mi,ma):
+    foundlist = []
+    for sid in dictionary:
+        student = dictionary[sid]
+        if (student.hs_score() > mi) and (student.hs_score() < ma):
+            foundlist.append(sid)
+            print(sid + "       "+ str(student.hs_score()))
+    return foundlist
