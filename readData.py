@@ -68,9 +68,7 @@ class Student:
                 if gradesMap[grade(course)] > 0 and cnum > best:
                     best = cnum
         return best
-# extracts the number from the name of a course
-    def colCourseNameNum(self):
-        cnum = int(re.findall('[0-9]+',cname)
+
 
 # some functions to help find info in the collegeSeq's
 def term(colCor): return colCor[0]
@@ -93,10 +91,7 @@ def readTerm(courseInf):
 
 # extracts the number from the name of a course
 def colCourseToNum(cname):
-    cnum = int(re.findall('[0-9]+',cname)
-# extracts the number from the name of a course
-def colCourseToNum(cname):
-    cnum = int(re.findall('[0-9]+',cname)
+    cnum = int(re.findall('[0-9]+',cname))
     return cnum
 # Returns a list of Students with their highschool classes.
 # Will make the adding students to dictionary and figuring out what the
