@@ -219,6 +219,7 @@ def get_sequences(fileName):
             sList.append(read_a_sequence(line))
     return sList
 
+#convenient command for construction of dictionary of student information
 def constructDictionary():
     hsdict = {}
     seqdict = {}
@@ -234,23 +235,13 @@ def constructDictionary():
         seqdict[student.sid] = student
     return mergeHSandColSeq(hsdict,seqdict)
 
-def oldConstructDictionary():
-    studentDir = {}
-    highschoolfiles = ['encrypted-grant-grades.txt',
-            'encrypted-poly-grades.txt',
-            'encrypted-taft-grades.txt']
-    seqFile = 'Encrypted-Math-Sequences.txt'
-    highschooldata = read_High_School_Data(highschoolfiles)
-    seqList = get_sequences(seqFile)
-    for student in highschooldata:
-        studentDir[student.sid] = student
-    for sid,seq in seqList:
-        if sid in studentDir:
-            student = studentDir[sid] 
-            student.collegeSeq = seq
-    return studentDir
-
-            
+#single command for constructing list of student objects.
+def makeStList():
+    stdict = constructDictionary()
+    stlist =[]
+    for key in stdict.fromkeys():
+        stlist.append(stdict[key])
+    return stlist
 
 def showall(d):
     for x in d.keys():
