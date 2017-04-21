@@ -17,11 +17,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-
+#need to find out what WU means in gradesMap!
+import base64
 from fuzzywuzzy import StringMatcher as strM
 import re
 import sys
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction import DictVectorizer as DVizer
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
@@ -32,11 +34,12 @@ hsClassesDict = {
         'math analysis':16,     'trig/alg':16,  'alg/trig':16,  'algebra':0,
         'unknown':-1
         }
+
 gradesMap = {   'A':4.0,'A-':4, #need to update the grade values
                 'B+':3,'B':3,'B-':3,
                 'C+':2,'C':2,'C-':2, 
                 'D+':1,'D':1,'D-':1,
-                'F':0, 'W':0, 
+                'F':0, 'W':0,'WU':0,  #Warning!
                 'CR':2, 'NC':0, 'RP':1 # I need to find out what RP means
                 }
 
@@ -69,10 +72,36 @@ class Student:
                     best = cnum
         return best
 
+#make dictionary for single student's college sequences
+    def dictizeCSeq(self):
+        dictionary = []
+        for c in self.collegeSeq :
+            dictionary.append({'course name': cname(c), 
+                    'grade':gradesMap[grade(c)],
+                    'units':units(c), 'term':term(c)
+                    })
+        return dictionary
+    def listifyCSeq(self):
+        l = []
+        for c in self.collegeSeq :
+            l.append([cname(c), gradesMap[grade(c)],units(c),term(c)])
+        return l
+
+# make dictionary for single student's highschool records.
+    def dictizeHSC(self):
+        return self.hsCourses[0][0]
+
+# Make a dictionary object
+    def dictize(self):
+        s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
+        return {'SID': s, 'CS': self.listifyCSeq()[0][0],
+                'HS':self.hs_score() 
+                }
 
 # some functions to help find info in the collegeSeq's
 def term(colCor): return colCor[0]
-def cname(colCor): return colCor[1]
+def cname(colCor): 
+    return int(re.findall('[0-9]+',colCor[1])[0])
 def units(colCor): return colCor[2]
 def grade(colCor): return colCor[3]
 
@@ -239,9 +268,10 @@ def constructDictionary():
 def makeStList():
     stdict = constructDictionary()
     stlist =[]
-    for key in stdict.fromkeys():
+    for key in stdict:
         stlist.append(stdict[key])
     return stlist
+
 
 def showall(d):
     for x in d.keys():
