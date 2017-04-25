@@ -18,12 +18,19 @@
 # 
 
 #need to find out what WU means in gradesMap!
+import mystats
 import base64
-from fuzzywuzzy import StringMatcher as strM
+#from fuzzywuzzy import StringMatcher as strM
+import courseMathcer
 import re
 import sys
 import matplotlib.pyplot as plt
-from sklearn.feature_extraction import DictVectorizer as DVizer
+from sklearn.feature_extraction import DictVectorizer
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression 
+import xarray as xr
+from sklearn import linear_model
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
@@ -50,6 +57,17 @@ class Student:
         self.hsCourses = [] # each course has pattern [name,grade1,grade2]
         self.hsOldCNames = [] 
         self.collegeSeq = []
+        self.sqeezedID = None #for use if want something more reasonable 
+                              # unique identifier than a really large 
+                              # integer
+
+    def sid64(self):
+        return self.sid + "=="
+    def sidInt(self):
+        if self.squeezedID:
+            return self.squeezedID
+        else:
+            return int.from_bytes(base64.b64decode(self.sid64()),'big')
 
 # returns a list of courseNames
     def hs_course_names(self):
@@ -62,6 +80,11 @@ class Student:
     def hs_score(self):
         return multiHSCtoNum(self.hs_course_names())
 
+# takes only one course at a time in the form of 
+# return a boolean
+    #def tookHSCourse():
+        
+        
 # extract some number from the college course sequences to use as a feature
     def col_seqScore(self):
         best = 0
@@ -90,11 +113,38 @@ class Student:
 # make dictionary for single student's highschool records.
     def dictizeHSC(self):
         return self.hsCourses[0][0]
+    
+    def datarrayCSeq(self):
+        names = []
+        grades = []
+        units = []
+        terms = []
+        l = []
+        for c in self.collegeSeq :
+            l0 = cname(c)
+            g = gradesMap[grade(c)]
+            l1 = g
+            l2 = int(c[2])
+            l3 = int(c[0])
+            l.append([l0,l1,l2,l3])
+        return l
+    
+    def tolistOfArrays(self):
+        ls = []
+        hinfo = self.hs_score()
+        for c in self.collegeSeq:
+            name = self.sidInt()
+            semester = int(term(c))
+            coursename = cname(c)
+            gradeval = int(gradesMap[grade(c)])
+            unitnumb = int(units(c))
+            ls.append([name,hinfo,coursename,gradeval,unitnumb,semester])
+        return ls
 
 # Make a dictionary object
     def dictize(self):
-        s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
-        return {'SID': s, 'CS': self.listifyCSeq()[0][0],
+        #s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
+        return {'SID': self.sidInt(), 'CS': self.listifyCSeq()[0][0],
                 'HS':self.hs_score() 
                 }
 
@@ -150,7 +200,8 @@ def read_High_School_Data(filesList):
                         newStudent.hsOldCNames.append(vals[4*i+0])
                     #    if i > 1: print(idstring + "    "+ str(i))
                         acourse = (
-                                    findClosest(cleanHSCstr(vals[4*i+0])), 
+                                    courseMatcher.findClosest(
+                                                cleanHSCstr(vals[4*i+0])), 
                                     vals[4*i+1],
                                     vals[4*i+2])
                         newStudent.hsCourses.append(acourse)
@@ -231,10 +282,12 @@ def read_a_sequence(line):
 #Both inputs should be dictionaries filled with Student objects.
 def mergeHSandColSeq(hs,cseq):
     mergedDict = {}
+    indexNumb = 0
     for student in hs.keys():
         if student in cseq.keys():
-        
+            indexNumb += 1
             csunStudent = Student(student)
+            csunStudent.squeezedID = indexNumb
             csunStudent.hsCourses = hs[student].hsCourses
             csunStudent.hsOldCNames = hs[student].hsOldCNames
             csunStudent.collegeSeq = cseq[student].collegeSeq
@@ -313,4 +366,34 @@ def searchByHsScore(dictionary,mi,ma):
         if (student.hs_score() > mi) and (student.hs_score() < ma):
             foundlist.append(sid)
             print(sid + "       "+ str(student.hs_score()))
+    rcolCor[1]
     return foundlist
+
+def constructMatrix():
+    sdata= makeStList()
+    ls = []
+    for s in sdata:
+        for e in s.tolistOfArrays():
+            ls.append(e)
+    return  pd.DataFrame(ls,columns=
+                            ['snum','hsinfo','cname','gval','unumb','sem'])
+
+
+def skdata():
+    return DictVectorizer(constructMatrix())
+
+def newplotdata():
+    sdat = constructMatrix()
+    reg = linear_model.LogisticRegression()
+    z = reg.fit(sdat.all,[1,1,1,1,1,1])
+    X = sdat['snum']
+    plt.plot(sdat['snum'],sdat['hsinfo'],'.')
+    plt.plot(X,sdat['cname'],'.')
+    plt.plot(list(map(lambda x: z.intercept_ * x, X)))
+    plt.show()
+
+#def myTestCase():
+#    allStudents = makeStList()
+#    setIcareAbout = []
+#    for s in allStudents:
+#        if 

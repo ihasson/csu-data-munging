@@ -79,17 +79,19 @@ def justClean(string):
 
 ## 
 #   Takes a string and finds the closest match from a list of strings.
-#   Bounds on what is too distant can be set by changing the starting value
-#   of bestdistance.
-#
-# The knownclasses, bestMatch, and bestdistance variables should all
-# be changed to fit the needs of the user.
-def findClosest(string):
-    knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
+# Params: 
+#    string : the thing you want to match to
+#    maxDist    : the maximum allowable distance
+#   cantFind    : the return string for when nothing is closer than maxDist
+#   listOfNames : the list of course names
+def findClosest(string, maxDist=7, cantFind="unkown", listOfNames=None):
+    if listOfNames == None:
+        knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
                     'pre-calculus', 'trigenometry', 'statistics',
                     'math analysis', 'trig/alg', 'alg/trig', 'algebra']
-    bestMatch = "unknown"
-    bestdistance = levenshteinDist(bestMatch,string)
+    else: knownclasses = listOfNames 
+    bestMatch = cantFind
+    bestdistance = maxDist
     for c in knownclasses:
         dist = levenshteinDist(c,string) 
         if dist < bestdistance :
