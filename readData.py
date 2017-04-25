@@ -82,8 +82,17 @@ class Student:
 
 # takes only one course at a time in the form of 
 # return a boolean
-    #def tookHSCourse():
-        
+    def tookHSCourse(nameOfCourse='',courseIdNum=None):
+        try: 
+            if courseIdNum == None:
+                courseIdNum = hsClassesDict[nameOfCourse]
+            coursesTaken = hs_course_names()
+            for e in coursesTaken:
+                if hsClassesDict[e] == courseIdNum:
+                    return True
+            return False
+        except KeyError:
+            return False
         
 # extract some number from the college course sequences to use as a feature
     def col_seqScore(self):
