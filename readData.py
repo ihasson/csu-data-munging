@@ -20,8 +20,7 @@
 #need to find out what WU means in gradesMap!
 import mystats
 import base64
-#from fuzzywuzzy import StringMatcher as strM
-import courseMathcer
+import courseMatcher
 import re
 import sys
 import matplotlib.pyplot as plt
@@ -38,7 +37,7 @@ from sklearn import linear_model
 hsClassesDict = {
         'algebra 1':2,  'algebra 2':8,  'geometry':4,   'calculus':64,
         'pre-calculus':16,  'trigenometry':16,  'statistics':32,
-        'math analysis':16,     'trig/alg':16,  'alg/trig':16,  'algebra':0,
+        'math analysis':16,   'trig/alg':16,  'alg/trig':16,  'algebra':0,
         'unknown':-1
         }
 
@@ -82,17 +81,13 @@ class Student:
 
 # takes only one course at a time in the form of 
 # return a boolean
-    def tookHSCourse(nameOfCourse='',courseIdNum=None):
-        try: 
-            if courseIdNum == None:
-                courseIdNum = hsClassesDict[nameOfCourse]
-            coursesTaken = hs_course_names()
-            for e in coursesTaken:
-                if hsClassesDict[e] == courseIdNum:
-                    return True
-            return False
-        except KeyError:
-            return False
+    def tookHSCourse(self, nameOfCourse):
+        coursesTaken = self.hs_course_names()
+        courseIdNum = hsClassesDict[nameOfCourse]
+        for e in coursesTaken:
+           if hsClassesDict[e] == courseIdNum:
+               return True
+        return False
         
 # extract some number from the college course sequences to use as a feature
     def col_seqScore(self):
@@ -252,20 +247,6 @@ def cleanHSCstr(string):
     cname.strip()
     return cname
 
-#findClosest highschool course name
-def findClosest(string):
-    knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
-                    'pre-calculus', 'trigenometry', 'statistics',
-                    'math analysis', 'trig/alg', 'alg/trig', 'algebra']
-    bestMatch = "unknown"
-    bestdistance = 4
-    for c in knownclasses:
-        dist = strM.distance(c,string) 
-        if dist < bestdistance :
-            bestdistance = dist
-            bestMatch = c
-    return bestMatch
-
 # for college sequences
 def read_a_sequence(line):
     line = line.strip()
@@ -401,8 +382,11 @@ def newplotdata():
     plt.plot(list(map(lambda x: z.intercept_ * x, X)))
     plt.show()
 
-#def myTestCase():
-#    allStudents = makeStList()
-#    setIcareAbout = []
-#    for s in allStudents:
-#        if 
+#prob of ??? given course ? was taken
+def everyoneThatTookHS(allStudents, courseName):
+    setIcareAbout = []
+    for s in allStudents:
+        if s.tookHSCourse(courseName): 
+            setIcareAbout.append(s)
+    return setIcareAbout
+

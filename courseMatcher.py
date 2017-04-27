@@ -84,7 +84,7 @@ def justClean(string):
 #    maxDist    : the maximum allowable distance
 #   cantFind    : the return string for when nothing is closer than maxDist
 #   listOfNames : the list of course names
-def findClosest(string, maxDist=7, cantFind="unkown", listOfNames=None):
+def findClosest(string, maxDist=7, cantFind="unknown", listOfNames=None):
     if listOfNames == None:
         knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
                     'pre-calculus', 'trigenometry', 'statistics',

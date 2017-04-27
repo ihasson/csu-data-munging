@@ -34,6 +34,15 @@ def cov(lx, ly):
 def var(lx):
     return cov(lx, lx.copy())
 
+def std_deviation(lx):
+    return math.sqrt(var(lx))
+
+def correlation(lx,ly):
+    sd_devX = std_deviation(lx)
+    sd_devY = std_deviation(ly)
+    if sd_devX > 0 and sd_devY >0:
+        return cov(lx,ly)/(sd_devX*sd_devY)
+
 def beta(lx,ly):
     return cov(lx,ly)/var(lx)
 
