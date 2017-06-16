@@ -23,25 +23,30 @@ import re
 import sys
 
 def levenshteinDist(stringA,stringB):
-    matrix = [[None for col in range(0,len(stringB)+1)] 
-                for row in range(0,len(stringA)+1)]
-    for col in range(0,len(stringB)+1,1) :
-        matrix[0][col] = col
-    for row in range(0,len(stringA)+1,1) :
-        matrix[row][0] = row
+    try:
+        matrix = [[None for col in range(0,len(stringB)+1)] 
+                    for row in range(0,len(stringA)+1)]
+        for col in range(0,len(stringB)+1,1) :
+            matrix[0][col] = col
+        for row in range(0,len(stringA)+1,1) :
+            matrix[row][0] = row
 
-    for col in range(1,len(stringB)+1) :
-        for row in range(1,len(stringA)+1):
-            l = 1 if stringB[col-1] != stringA[row-1] else 0
-            up = matrix[row][col-1] +1
-            left = matrix[row-1][col] +1
-            upleft = matrix[row-1][col-1] + l
-            matrix[row][col] = min((upleft,up,left))
+        for col in range(1,len(stringB)+1) :
+            for row in range(1,len(stringA)+1):
+                l = 1 if stringB[col-1] != stringA[row-1] else 0
+                up = matrix[row][col-1] +1
+                left = matrix[row-1][col] +1
+                upleft = matrix[row-1][col-1] + l
+                matrix[row][col] = min((upleft,up,left))
    
-    #print matrix 
-    a = matrix[len(stringA)][len(stringB)]
-    #print a
-    return a
+        #print matrix 
+        a = matrix[len(stringA)][len(stringB)]
+        #print a
+        return a
+    except TypeError:
+        print("stringA" + stringA)
+        print("stringB" + "")
+
 
 # read data and also find what appears to be the closest match for the 
 # course name.
@@ -62,20 +67,23 @@ def readAndClean(fileList):
                 cname.strip()
                 closest = findClosest(cname)
                 dataset.append((vals,cname,closest))
-                print( cname +"\t" + closest )
+                #print( cname +"\t" + closest )
     return dataset
 
 def justClean(string):
-    cname = string
-    cname = cname.replace('II','2')
-    cname = cname.lower()
-    cname = re.sub("\(.*\)","",cname)
-    cname = re.sub("common core","",cname)
-    cname = re.sub("honors","",cname)
-    cname = re.sub("ap ","",cname)
-    cname = re.sub("h(\.)? ","",cname)
-    cname.strip()
-    return cname
+    try:
+        cname = string
+        cname = cname.replace('II','2')
+        cname = cname.lower()
+        cname = re.sub("\(.*\)","",cname)
+        cname = re.sub("common core","",cname)
+        cname = re.sub("honors","",cname)
+        cname = re.sub("ap ","",cname)
+        cname = re.sub("h(\.)? ","",cname)
+        cname.strip()
+        return cname
+    except:
+        print(string)
 
 ## 
 #   Takes a string and finds the closest match from a list of strings.
@@ -87,7 +95,7 @@ def justClean(string):
 def findClosest(string, maxDist=7, cantFind="unknown", listOfNames=None):
     if listOfNames == None:
         knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
-                    'pre-calculus', 'trigenometry', 'statistics',
+                    'pre-calculus', 'trigonometry', 'statistics',
                     'math analysis', 'trig/alg', 'alg/trig', 'algebra']
     else: knownclasses = listOfNames 
     bestMatch = cantFind
@@ -98,4 +106,13 @@ def findClosest(string, maxDist=7, cantFind="unknown", listOfNames=None):
             bestdistance = dist
             bestMatch = c
     return bestMatch
+def generate_overfit_map():
+    verimap = {}
+    with open('uniqNames.txt', 'r') as f:
+        for line in f:
+            categ,name = line.split(',')
+            categ = categ.strip()
+            name = name.strip()
+            verimap[name] = categ
+    return verimap
 
