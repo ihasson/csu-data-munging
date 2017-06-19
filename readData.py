@@ -18,55 +18,57 @@
 # 
 
 #need to find out what WU means in gradesMap!
-import mystats
 import base64
 import courseMatcher
 import re
 import sys
-import matplotlib.pyplot as plt
-from sklearn.feature_extraction import DictVectorizer
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression 
 import xarray as xr
-from sklearn import linear_model
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
 # not in the dictionary or if there was never anything to begin with
-hsClassesDict = {
+hsClassesDict = { #Depricated#
         'algebra 1':2,  'algebra 2':8,  'geometry':4,   'calculus':64,
         'pre-calculus':16,  'trigenometry':16,  'statistics':32,
         'math analysis':16,   'trig/alg':16,  'alg/trig':16,  'algebra':0,
         'unknown':-1
         }
 
+# Provides numeric values for grade strings.
+# Need to change scores for non-letter 
 gradesMap = {  'A+' 'A':4.0,'A-':4, #need to update the grade values
                 'B+':3,'B':3,'B-':3,
                 'C+':2,'C':2,'C-':2, 
                 'D+':1,'D':1,'D-':1,
-                'F':0, 'W':0,'WU':0,  #Warning!
-                'CR':2, 'NC':0, 'RP':1 # I need to find out what RP means
+                'F':0, 'W':0,'WU':0,   
+                'CR':2, 'NC':0, 'RP':1 # RP stands for repeat
+                #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
                 }
 
+# class definition for student may want to create sub classes for
+# highschool application and 
 class Student:
     
     def __init__(self,sid):
-        self.sid = sid
+        self.sid = sid   # Must be base64 encoded and uniquely identifying.
         self.hsCourses = [] # each course has pattern [name,grade1,grade2]
-        self.hsOldCNames = [] 
+        self.hsOldCNames = [] # Course names prior to labeling.
         self.collegeSeq = []
-        self.sqeezedID = None #for use if want something more reasonable 
+#        self.sqeezedID = None #for use if want something more reasonable 
                               # unique identifier than a really large 
                               # integer
 
+#deprecate soon!
+# Undo the removal of padding from base64.
     def sid64(self):
         return self.sid + "=="
-    def sidInt(self):
-        if self.squeezedID:
-            return self.squeezedID
-        else:
-            return int.from_bytes(base64.b64decode(self.sid64()),'big')
+# 
+#    def sidInt(self):
+#        if self.squeezedID:
+#            return self.squeezedID
+#        else:
+#            return int.from_bytes(base64.b64decode(self.sid64()),'big')
 
 # returns a list of courseNames
     def hs_course_names(self):
@@ -79,15 +81,24 @@ class Student:
     def hs_score(self):
         return multiHSCtoNum(self.hs_course_names())
         
-# takes only one course at a time in the form of 
+# Can take either string or list of strings. 
+# True if student has taken any of the strings.
+# Currently does not check grades.
 # return a boolean
     def tookHSCourse(self, nameOfCourse):
-        coursesTaken = self.hs_course_names()
-        courseIdNum = hsClassesDict[nameOfCourse]
-        for e in coursesTaken:
-           if hsClassesDict[e] == courseIdNum:
-               return True
-        return False
+        if nameOfCourse is str:
+            coursesTaken = self.hs_course_names()
+            courseIdNum = hsClassesDict[nameOfCourse]
+            for e in coursesTaken:
+               if hsClassesDict[e] == courseIdNum:
+                   return True
+            return False
+        elif nameOfCourse is list:
+            if len(nameOfCourse) >=1: 
+                return (tookHSCourse(nameOfCourse.pop) or 
+                        tookHSCourse(nameOfCourse))
+        else: 
+            return False
         
 # extract some number from the college course sequences to use as a feature
     def col_seqScore(self):
@@ -182,6 +193,8 @@ def readTerm(courseInf):
 def colCourseToNum(cname):
     cnum = int(re.findall('[0-9]+',cname))
     return cnum
+
+# Only for those 3 highschools. 
 # Returns a list of Students with their highschool classes.
 # Will make the adding students to dictionary and figuring out what the
 # courseString maps to in different function.
@@ -276,6 +289,7 @@ def read_a_sequence(line):
         return None
 
 #Both inputs should be dictionaries filled with Student objects.
+#For use because simple intersection cannot combine the info.
 def mergeHSandColSeq(hs,cseq):
     mergedDict = {}
     indexNumb = 0
@@ -341,19 +355,6 @@ def multiHSCtoNum(hsClasses):
             resultRank = resultRank + rank
     return resultRank
 
-def plotData(studentInfo):
-    x = []
-    y = []
-    for student in studentInfo:
-        x.append(studentInfo[student].hs_score())
-        y.append(studentInfo[student].col_seqScore())
-        if studentInfo[student].hs_score() > 400: print(student)
-    plt.figure()
-    plt.title('Graph')
-    plt.xlabel('High School')
-    plt.ylabel('College')
-    plt.plot(x,y,'k.')
-    plt.show()
 
 def searchByHsScore(dictionary,mi,ma):
     foundlist = []
@@ -365,28 +366,6 @@ def searchByHsScore(dictionary,mi,ma):
     rcolCor[1]
     return foundlist
 
-def constructMatrix():
-    sdata= makeStList()
-    ls = []
-    for s in sdata:
-        for e in s.tolistOfArrays():
-            ls.append(e)
-    return  pd.DataFrame(ls,columns=
-                            ['snum','hsinfo','cname','gval','unumb','sem'])
-
-
-def skdata():
-    return DictVectorizer(constructMatrix())
-
-def newplotdata():
-    sdat = constructMatrix()
-    reg = linear_model.LogisticRegression()
-    z = reg.fit(sdat.all,[1,1,1,1,1,1])
-    X = sdat['snum']
-    plt.plot(sdat['snum'],sdat['hsinfo'],'.')
-    plt.plot(X,sdat['cname'],'.')
-    plt.plot(list(map(lambda x: z.intercept_ * x, X)))
-    plt.show()
 
 #prob of ??? given course ? was taken
 def everyoneThatTookHS(allStudents, courseName):
@@ -423,7 +402,3 @@ def relabel_func(string ,dictionary=hsClassesDict):
     s = courseMatcher.findClosest(s,maxDist=4,listOfNames=courselist)
     return dictionary[s]
 
-def renameCourses(df,columns,dictionary=hsClassesDict):
-    for c in columns:
-        df['course_remap'] = df.apply(lambda row: relabel_func(row),axis=1)
-    return df
