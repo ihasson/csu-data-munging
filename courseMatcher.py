@@ -22,6 +22,10 @@
 import re
 import sys
 
+#note: precalc equivalencies may be subject to change.
+apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
+        'math_anal' 'trigonometry' 'geo_alg_trig' 'precalc': 'precalc'}
+
 def levenshteinDist(stringA,stringB):
     try:
         matrix = [[None for col in range(0,len(stringB)+1)] 
@@ -106,6 +110,7 @@ def findClosest(string, maxDist=7, cantFind="unknown", listOfNames=None):
             bestdistance = dist
             bestMatch = c
     return bestMatch
+
 def generate_overfit_map():
     verimap = {}
     with open('uniqNames.txt', 'r') as f:

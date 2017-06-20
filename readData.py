@@ -22,8 +22,8 @@ import base64
 import courseMatcher
 import re
 import sys
-import numpy as np
-import xarray as xr
+#import numpy as np #I don't think I'm using this anymore
+#import xarray as xr #I don't think I'm using this anymore
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
@@ -34,6 +34,14 @@ hsClassesDict = { #Depricated#
         'math analysis':16,   'trig/alg':16,  'alg/trig':16,  'algebra':0,
         'unknown':-1
         }
+
+#note: precalc equivalencies may be subject to change.
+apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
+        'math_anal' 'trigonometry' 'geo_alg_trig' 'precalc': 'precalc'}
+
+hsClasslevels = {'algebra1':8, 'geometry':9, 'algebra2':10, 'precalc':11,
+        'stats':11, 'calculus':12, 'bad':0, 'unknown':0}
+        #, 'data_science':,'discrete_math': }# to be determined
 
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
@@ -69,7 +77,7 @@ class Student:
 #            return self.squeezedID
 #        else:
 #            return int.from_bytes(base64.b64decode(self.sid64()),'big')
-
+    
 # returns a list of courseNames
     def hs_course_names(self):
         lsOfCnames = []
@@ -124,6 +132,14 @@ class Student:
         for c in self.collegeSeq :
             l.append([cname(c), gradesMap[grade(c)],units(c),term(c)])
         return l
+    
+# show college course info
+    def show_collegeSeq(self):
+        print(self.collegeSeq)
+
+# show highschool course info
+    def show_hsCourses(self):
+        print(self.hsCourses)
 
 # make dictionary for single student's highschool records.
     def dictizeHSC(self):
@@ -367,21 +383,26 @@ def searchByHsScore(dictionary,mi,ma):
     return foundlist
 
 
+#doesn't even seem to work
 #prob of ??? given course ? was taken
 def everyoneThatTookHS(allStudents, courseName):
-    setIzcareAbout = []
+    setIcareAbout = []
     for s in allStudents:
         if s.tookHSCourse(courseName): 
             setIcareAbout.append(s)
     return setIcareAbout
 
+#I think I can get rid of this one.
+# a method to count all students who took a course but probably doesn't
+# deduplicate
 def countStudents(allstudents,l):
     n = 0
     for e in l:
         n += len(everyoneThatTookHS(allstudents, e))
     return n
 
-#seems to be a static method for finding the intersection of two student lists
+#this implementation is dumb. Need to replace with dictionary based one later.
+#A static method for finding the intersection of two student lists.
 def intersection(a,b):
     c = []
     for x in a:
@@ -390,15 +411,85 @@ def intersection(a,b):
                 c.append(y)
     return c
 
+#can't remember what this is for
 def constructDataTable():
     students = makeStList()
     dataForMatching = []
     for stu in students:
         dataForMatching.append([stu.oldCnames[0],stu.hsCourses[0]])
 
+# can't remember what this is for
 def relabel_func(string ,dictionary=hsClassesDict):
     courselist = list(dictionary.keys()) 
     s = courseMatcher.justClean(string)
     s = courseMatcher.findClosest(s,maxDist=4,listOfNames=courselist)
     return dictionary[s]
+
+#should be an instance method of student but don't want to bother.
+def show_records(st):
+    print(st.sid)
+    print(st.hsCourses)
+    print(st.hsOldCNames)
+    print(st.collegeSeq)
+    print("\n")
+
+#already deduplicates
+def get_dict_by_courses(allstudent_info):
+    info = {}
+    for a_student in allstudent_info:
+        for course in a_student.hsCourses:
+            cname = course[0]
+            if cname in info:
+                info[cname][a_student.sid]= a_student
+            else: 
+                info[cname] = {}
+                info[cname][a_student.sid] = a_student
+    return info
+
+def dict_to_list(d):
+    ls = []
+    for k in d.keys():
+        ls.append(d[k])
+    return ls
+
+#can't remember if this has deduplication
+def took_course(name,st_data_arr):
+    count = 0
+    students=[]
+    for st in st_data_arr:
+        took = 0
+        for e in st.hsCourses:
+            if e[0] == name:
+                if took == 0: students.append(st)
+                took = 1
+        count += took
+    return students
+
+#Is intended to be given all student info in the form of a list of Student 
+#objects. 
+#Returns a dictionary of highschool course dictionaries each containing the
+#students reported to have taken the class in their last year of highschool.
+#
+def get_dict_by_courses(allstudent_info):
+    info = {}
+    info['total'] = {}
+    for a_student in allstudent_info:
+        info['total'][a_student.sid] = a_student
+        for course in a_student.hsCourses:
+            cname = course[0]
+            if cname in info:
+                info[cname][a_student.sid]= a_student
+            else: 
+                info[cname] = {}
+                info[cname][a_student.sid] = a_student
+    return info
+
+#need to rename
+#currently only gives how many people took each course.
+#Sum of all counts should be greater than the total students due to 
+#intersection
+def summary_counts(inf_d):
+    for k in inf_d.keys():
+        print(k)
+        print(len(inf_d[k]))
 
