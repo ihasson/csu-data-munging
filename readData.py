@@ -22,6 +22,7 @@ import base64
 import courseMatcher
 import re
 import sys
+import hs
 #import numpy as np #I don't think I'm using this anymore
 #import xarray as xr #I don't think I'm using this anymore
 
@@ -67,6 +68,7 @@ class Student:
                               # unique identifier than a really large 
                               # integer
 
+            
 #deprecate soon!
 # Undo the removal of padding from base64.
     def sid64(self):
@@ -493,3 +495,72 @@ def summary_counts(inf_d):
         print(k)
         print(len(inf_d[k]))
 
+#Checks for which students gave all grades.
+#Probably has lots of bugs but don't want to bother fixing it because most
+#students never inputed their grades so it's not even worth counting seriously.
+def gave_all_grades(stList):
+    count=0
+    for es in stList:
+        bad = 0
+        for ec in es.hsCourses:
+            if ( (ec[1] != 'X1' and ec[1] != 'X2') and 
+                    (ec[2] != 'X1' and ec[2] != 'X2')):
+                bad = 1
+        count += bad
+    return count
+
+#Only one student at a time and returns pair where the first val is grades 
+#submitted and second is how many classes.
+#similar to gave_all_grades but actually worth implementing
+#Still treats a blank as having submitted.
+def grades_submitted_per_class(st):
+    grades = 0
+    classes = 0
+    for c in st.hsCourses:
+        classes += 1
+        if c[1] != 'X1':
+            grades += 1
+        if c[2] != 'X2':
+            grades += 1
+    return (grades,classes)
+
+def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
+    with open(filename,'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            st_inf = line.split(',')
+            sid = st_inf[0]
+            st=None
+            if sid in dictionary:
+                st = dictionary[sid]
+            else:
+                st = Student(sid)
+                dictionary[sid] = st
+            c_inf = hs.HSCourse()
+            # st_inf[1] is always '2'
+            c_inf.hs_crs_nbr = st_inf[2]
+            c_inf.hs_grade_level   = st_inf[3]
+            c_inf.descr            = st_inf[4]
+            c_inf.fall_gr          = st_inf[5]
+            c_inf.spr_gr           = st_inf[6]
+            c_inf.summer_gr        = st_inf[7]
+            c_inf.honors           = st_inf[8]
+            c_inf.sum2_gr          = st_inf[9]
+            c_inf.High_School      = st_inf[10]
+            c_inf.course_source    = st_inf[11]
+            #c_inf.course_label     = somecoursematcher( descr )
+            st.hsCourses.append(c_inf)
+    return dictionary
+
+def read_College_Seq(filename='Encypted-Math-Sequences',dictionary={}):
+    with open(filename,'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            line = line.split("|")
+            sid = line[0]
+            st = None
+            if sid in dictionary:
+                st = dictionary[sid]
+            else:
+                st = Student(sid)
+            
