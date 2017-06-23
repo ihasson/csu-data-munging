@@ -1,3 +1,4 @@
+## @package readData
 # NEED NEW DESCRIPTION!
 #  
 #
@@ -68,18 +69,6 @@ class Student:
                               # unique identifier than a really large 
                               # integer
 
-            
-#deprecate soon!
-# Undo the removal of padding from base64.
-    def sid64(self):
-        return self.sid + "=="
-# 
-#    def sidInt(self):
-#        if self.squeezedID:
-#            return self.squeezedID
-#        else:
-#            return int.from_bytes(base64.b64decode(self.sid64()),'big')
-    
 # returns a list of courseNames
     def hs_course_names(self):
         lsOfCnames = []
@@ -174,43 +163,6 @@ class Student:
             ls.append([name,hinfo,coursename,gradeval,unitnumb,semester])
         return ls
 
-# Make a dictionary object
-    def dictize(self):
-        #s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
-        return {'SID': self.sidInt(), 'CS': self.listifyCSeq()[0][0],
-                'HS':self.hs_score() 
-                }
-
-# some functions to help find info in the collegeSeq's
-def term(colCor): return colCor[0]
-def cname(colCor): 
-    return int(re.findall('[0-9]+',colCor[1])[0])
-
-# Converts the base64 encoded student id from the highschooldata to 
-# base16 encoding to conform with the new data.
-# Some massaging of the out put string may be needed.
-def sid64tosid16(str64):
-    if not(str64.find("==")):
-        str64 = str64 + "=="
-    return base64.b16encode(base64.b64decode(str64))
-
-# Takes a course from the college sequences and returns the info from the 
-# term field.
-def readTerm(courseInf):
-    century = {'0':1900, '2':2000}
-    semesterdict = {'1':'winter',   '3':'spring',   
-                    '5':'summer',   '7':'fall'
-                    }
-    termStr = courseInf[0]
-    cent = termStr[0]
-    year = termStr[1:3]
-    semester = termStr[3]
-    return (century[cent] + int(year) , semesterdict[semester]) 
-
-# extracts the number from the name of a course
-def colCourseToNum(cname):
-    cnum = int(re.findall('[0-9]+',cname))
-    return cnum
 
 # Only for those 3 highschools. 
 # Returns a list of Students with their highschool classes.
@@ -284,6 +236,7 @@ def cleanHSCstr(string):
     cname.strip()
     return cname
 
+# Will be depricating soon.
 # for college sequences
 def read_a_sequence(line):
     line = line.strip()
@@ -495,9 +448,9 @@ def summary_counts(inf_d):
         print(k)
         print(len(inf_d[k]))
 
-#Checks for which students gave all grades.
-#Probably has lots of bugs but don't want to bother fixing it because most
-#students never inputed their grades so it's not even worth counting seriously.
+## Checks for which students gave all grades.
+# Probably has lots of bugs but don't want to bother fixing it because most
+# students never inputed their grades so it's not even worth counting seriously.
 def gave_all_grades(stList):
     count=0
     for es in stList:
@@ -509,10 +462,10 @@ def gave_all_grades(stList):
         count += bad
     return count
 
-#Only one student at a time and returns pair where the first val is grades 
-#submitted and second is how many classes.
-#similar to gave_all_grades but actually worth implementing
-#Still treats a blank as having submitted.
+## Only one student at a time and returns pair where the first val is grades 
+# submitted and second is how many classes.
+# similar to gave_all_grades but actually worth implementing
+# Still treats a blank as having submitted.
 def grades_submitted_per_class(st):
     grades = 0
     classes = 0
@@ -524,6 +477,7 @@ def grades_submitted_per_class(st):
             grades += 1
     return (grades,classes)
 
+## note: the default uses a file with 9 students none of whom matriculated.
 def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
     with open(filename,'r') as f:
         for line in f.readlines():
@@ -552,15 +506,35 @@ def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
             st.hsCourses.append(c_inf)
     return dictionary
 
-def read_College_Seq(filename='Encypted-Math-Sequences',dictionary={}):
+## put description here.
+def read_College_Seq(filename='Encrypted-Math-Sequences.txt',dictionary={}):
     with open(filename,'r') as f:
         for line in f.readlines():
             line = line.rstrip()
             line = line.split("|")
             sid = line[0]
+            fields = line
             st = None
             if sid in dictionary:
                 st = dictionary[sid]
             else:
                 st = Student(sid)
-            
+                dictionary[sid] = st
+            for x in range(int( len(line)/4 ) ):
+                st.collegeSeq.append(
+                    [line[4*x+1],line[4*x+2],line[4*x+3],line[4*x+4]])
+    return dictionary
+
+## need to change the names of the input variables to avoid confusion.
+def big_merge(hsd=read_Large_HS(),csd=read_College_Seq()):
+    combined = {}
+    stl = None
+    if len(hsd)>len(csd):
+        stl = list(csd)
+    else:
+        stl = list(hsd)
+    for s in stl:
+        if (s in csd) and (s in hsd):
+            combined[s] = hsd[s]
+            combined[s].collegeSeq = csd[s].collegeSeq
+    return combined
