@@ -1,4 +1,4 @@
-
+import Student
 import courseMatcher as cm
 import readData as rd
 
@@ -85,3 +85,15 @@ def count_took_course(name,st_data_arr=student_data):
         count += took
     return count
 
+def dataForArman():
+    lines = []
+
+    for e in student_data:
+        csunmath = e.first_math()
+        for c in e.hsCourses: 
+            numhscourses = len(e.hsCourses)
+            hsmath = c[0]
+            l = "%s,%s,%s,%s,%d\n" % (
+                    e.sid,hsmath,csunmath[1],csunmath[3],numhscourses)
+            lines.append(l)
+    return lines

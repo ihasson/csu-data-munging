@@ -19,13 +19,13 @@
 # 
 
 #need to find out what WU means in gradesMap!
-import base64
+import binascii
 import courseMatcher
 import re
 import sys
-import hs
-#import numpy as np #I don't think I'm using this anymore
-#import xarray as xr #I don't think I'm using this anymore
+from Student import HSCourse
+from Student import Student
+#from Student import CollegeSequence
 
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
@@ -56,113 +56,9 @@ gradesMap = {  'A+' 'A':4.0,'A-':4, #need to update the grade values
                 #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
                 }
 
-# class definition for student may want to create sub classes for
-# highschool application and 
-class Student:
-    
-    def __init__(self,sid):
-        self.sid = sid   # Must be base64 encoded and uniquely identifying.
-        self.hsCourses = [] # each course has pattern [name,grade1,grade2]
-        self.hsOldCNames = [] # Course names prior to labeling.
-        self.collegeSeq = []
-#        self.sqeezedID = None #for use if want something more reasonable 
-                              # unique identifier than a really large 
-                              # integer
 
-# returns a list of courseNames
-    def hs_course_names(self):
-        lsOfCnames = []
-        for course in self.hsCourses:
-            lsOfCnames.append(course[0])
-        return lsOfCnames
-
-# returns the (guessed) valuation of how much math the student did
-    def hs_score(self):
-        return multiHSCtoNum(self.hs_course_names())
-        
-# Can take either string or list of strings. 
-# True if student has taken any of the strings.
-# Currently does not check grades.
-# return a boolean
-    def tookHSCourse(self, nameOfCourse):
-        if nameOfCourse is str:
-            coursesTaken = self.hs_course_names()
-            courseIdNum = hsClassesDict[nameOfCourse]
-            for e in coursesTaken:
-               if hsClassesDict[e] == courseIdNum:
-                   return True
-            return False
-        elif nameOfCourse is list:
-            if len(nameOfCourse) >=1: 
-                return (tookHSCourse(nameOfCourse.pop) or 
-                        tookHSCourse(nameOfCourse))
-        else: 
-            return False
-        
-# extract some number from the college course sequences to use as a feature
-    def col_seqScore(self):
-        best = 0
-        for course in self.collegeSeq :
-            if grade(course) in gradesMap:
-                cnum = int(re.findall('[0-9]+',cname(course))[0])
-                if gradesMap[grade(course)] > 0 and cnum > best:
-                    best = cnum
-        return best
-
-#make dictionary for single student's college sequences
-    def dictizeCSeq(self):
-        dictionary = []
-        for c in self.collegeSeq :
-            dictionary.append({'course name': cname(c), 
-                    'grade':gradesMap[grade(c)],
-                    'units':units(c), 'term':term(c)
-                    })
-        return dictionary
-    def listifyCSeq(self):
-        l = []
-        for c in self.collegeSeq :
-            l.append([cname(c), gradesMap[grade(c)],units(c),term(c)])
-        return l
-    
-# show college course info
-    def show_collegeSeq(self):
-        print(self.collegeSeq)
-
-# show highschool course info
-    def show_hsCourses(self):
-        print(self.hsCourses)
-
-# make dictionary for single student's highschool records.
-    def dictizeHSC(self):
-        return self.hsCourses[0][0]
-    
-    def datarrayCSeq(self):
-        names = []
-        grades = []
-        units = []
-        terms = []
-        l = []
-        for c in self.collegeSeq :
-            l0 = cname(c)
-            g = gradesMap[grade(c)]
-            l1 = g
-            l2 = int(c[2])
-            l3 = int(c[0])
-            l.append([l0,l1,l2,l3])
-        return l
-    
-    def tolistOfArrays(self):
-        ls = []
-        hinfo = self.hs_score()
-        for c in self.collegeSeq:
-            name = self.sidInt()
-            semester = int(term(c))
-            coursename = cname(c)
-            gradeval = int(gradesMap[grade(c)])
-            unitnumb = int(units(c))
-            ls.append([name,hinfo,coursename,gradeval,unitnumb,semester])
-        return ls
-
+def b16tob64(str16):
+    return bytes.decode(binascii.unhexlify(str16))
 
 # Only for those 3 highschools. 
 # Returns a list of Students with their highschool classes.
@@ -477,8 +373,9 @@ def grades_submitted_per_class(st):
             grades += 1
     return (grades,classes)
 
-## note: the default uses a file with 9 students none of whom matriculated.
-def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
+## reads a particular formatted file of student transcripts
+# 
+def read_Large_HS(filename='hs-math.csv',dictionary={}):
     with open(filename,'r') as f:
         for line in f.readlines():
             line = line.rstrip()
@@ -490,7 +387,7 @@ def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
             else:
                 st = Student(sid)
                 dictionary[sid] = st
-            c_inf = hs.HSCourse()
+            c_inf = HSCourse()
             # st_inf[1] is always '2'
             c_inf.hs_crs_nbr = st_inf[2]
             c_inf.hs_grade_level   = st_inf[3]
@@ -500,14 +397,32 @@ def read_Large_HS(filename='fixed-sample.csv',dictionary={}):
             c_inf.summer_gr        = st_inf[7]
             c_inf.honors           = st_inf[8]
             c_inf.sum2_gr          = st_inf[9]
-            c_inf.High_School      = st_inf[10]
-            c_inf.course_source    = st_inf[11]
+            #c_inf.cman             = st_inf[10] no clue what this is
+            c_inf.High_School      = st_inf[11]
+            c_inf.course_source    = st_inf[12]
             #c_inf.course_label     = somecoursematcher( descr )
             st.hsCourses.append(c_inf)
     return dictionary
 
-## put description here.
-def read_College_Seq(filename='Encrypted-Math-Sequences.txt',dictionary={}):
+## read zipcodes.
+# 
+def read_zip(filename='data/Encrypted-Student-Zip-Codes.txt',dictionary={}):
+    with open(filename,'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            line = line.split(",")
+            sid = b16tob64(line[0])
+            if sid in dictionary:
+                st = dictionary[sid]
+            else: 
+                dictionary[sid] = Student(sid)
+                st = dictionary[sid]
+            st.zipcode = line[1] 
+    return dictionary
+
+## reads college sequences only for those 3 schools.
+# 
+def read_3sCgrades(filename='Encrypted-Math-Sequences.txt',dictionary={}):
     with open(filename,'r') as f:
         for line in f.readlines():
             line = line.rstrip()
@@ -525,8 +440,42 @@ def read_College_Seq(filename='Encrypted-Math-Sequences.txt',dictionary={}):
                     [line[4*x+1],line[4*x+2],line[4*x+3],line[4*x+4]])
     return dictionary
 
+def read_grades_csun(
+        fname='data/ecrypted-math-grades-all-students.txt',dictionary={}):
+    with open(fname,'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            fields = line.split("|")
+            sid = b16tob64(fields[0])
+            if sid in dictionary:
+                st = dictionary[sid]
+            else:
+                dictionary[sid] = Student(sid)
+                st = dictionary[sid]
+            st.c
+
+## read persistance data
+#
+def read_Persistance_Data(filename='data/Encrypted-Student-Persistence-Data.txt',
+        dictionary={}):
+    with open(filename,'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            fields = line.split("|")
+            sid = b16tob64(fields[0])
+            if sid in dictionary:
+                st = dictionary[sid]
+            else: 
+                dictionary[sid] = Student(sid)
+                st = dictionary[sid]
+            st.first_term= fields[1]
+            st.last_term=fields[2]
+            st.grad_term=fields[3]
+    return dictionary
+
+
 ## need to change the names of the input variables to avoid confusion.
-def big_merge(hsd=read_Large_HS(),csd=read_College_Seq()):
+def big_merge(hsd,csd):
     combined = {}
     stl = None
     if len(hsd)>len(csd):

@@ -1,4 +1,4 @@
-
+import zipcode
 
 # class definition for student may want to create sub classes for
 # highschool application and 
@@ -9,13 +9,26 @@ class Student:
         self.hsCourses = [] # each course has pattern [name,grade1,grade2]
         self.hsOldCNames = [] # Course names prior to labeling.
         self.collegeSeq = []
-    
-# returns a list of courseNames
+        self.zipcode = None
+        self.first_term = None
+        self.last_term = None
+        self.grad_term = None
+        
+
+## returns a list of courseNames
     def hs_course_names(self):
         lsOfCnames = []
         for course in self.hsCourses:
             lsOfCnames.append(course[0])
         return lsOfCnames
+
+## Checks if student is californian by zipcode. 
+#   For now just returns false because not implemented.
+    def is_californian(self):
+        if self.zipcode == None:
+            return False
+        else: 
+            return (self.zipcode.state == 'CA')
 
 # returns the (guessed) valuation of how much math the student did
     def hs_score(self):
@@ -76,7 +89,7 @@ class Student:
 # make dictionary for single student's highschool records.
     def dictizeHSC(self):
         return self.hsCourses[0][0]
-    
+ #not sure if still need this   
     def datarrayCSeq(self):
         names = []
         grades = []
@@ -91,7 +104,7 @@ class Student:
             l3 = int(c[0])
             l.append([l0,l1,l2,l3])
         return l
-    
+#not suer if still need this.
     def tolistOfArrays(self):
         ls = []
         hinfo = self.hs_score()
@@ -104,6 +117,18 @@ class Student:
             ls.append([name,hinfo,coursename,gradeval,unitnumb,semester])
         return ls
 
+## math course student took at csun returns first course the student took
+#
+    def first_math(self):
+        earliest = self.collegeSeq[0]
+        for e in self.collegeSeq:
+            if e[0].isnumeric():
+                if int(earliest[0]) > int(e[0]):
+                    earliest = e
+            else: print("error in Student.fist_math()" + str(earliest[0]) )
+        return earliest
+
+#forgot what this is for.
 # Make a dictionary object
     def dictize(self):
         #s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
@@ -111,12 +136,47 @@ class Student:
                 'HS':self.hs_score() 
                 }
 
-#not sure if this should be college course sequence or just single course info
-class CollegeSequence:
+class HSCourse:
     def __init__(self):
+        self.hs_crs_nbr = None
+        self.hs_grade_level = None
+        self.descr = None #name
+        self.fall_gr = None
+        self.spr_gr = None
+        self.summer_gr = None
+        self.honors = None
+        self.sum2_gr = None
+        #self.cman not a clue what this means
+        self.High_School = None
+        self.course_source =None # options seem to be "LIST" or "MANL"
+        self.course_label =None
+        # this is the part where it actually gets alterred
+
+    def asList(self):
+       return [self.hs_crs_nbr, 
+               self.hs_grade_level,
+               self.descr,
+               self.fall_gr,
+               self.spr_gr,
+               self.summer_gr,
+               self.honors,
+               self.sum2_gr,
+               self.High_School,
+               self.course_source , 
+               self.course_label] 
+
+    def showAll(self):
+        print(str(self.descr))
+
+#not sure if this should be college course sequence or just single course info
+#class CollegeSequence:
+ #   def __init__(self):
+
 
 # some functions to help find info in the collegeSeq's
-def term(colCor): return colCor[0]
+def term(colCor): 
+    return colCor[0]
+
 def cname(colCor): 
     return int(re.findall('[0-9]+',colCor[1])[0])
 
