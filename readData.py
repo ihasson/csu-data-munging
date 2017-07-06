@@ -74,7 +74,7 @@ def read_High_School_Data(filesList):
             for line in f.readlines():
                 linenum +=1
                 line = line.rstrip()
-                idstring,rest = line.split("==|")
+                idstring,sep,rest = line.partition("|")
                 newStudent = Student(idstring)
                 vals = []
                 vals = rest.split('|')
@@ -136,7 +136,7 @@ def cleanHSCstr(string):
 # for college sequences
 def read_a_sequence(line):
     line = line.strip()
-    sid,seq = line.split("==|")
+    sid,placeholder,seq = line.partition("|")
     fields = seq.split("|")
     cInfoList = []
     if len(fields)%4 == 0:
@@ -374,9 +374,11 @@ def grades_submitted_per_class(st):
     return (grades,classes)
 
 ## reads a particular formatted file of student transcripts
-# 
+#  not sure what to do with this now that it is clear that the highschool data
+# was encoded differently from everything else.
 def read_Large_HS(filename='hs-math.csv',dictionary={}):
     with open(filename,'r') as f:
+        f.readline()
         for line in f.readlines():
             line = line.rstrip()
             st_inf = line.split(',')
@@ -398,7 +400,7 @@ def read_Large_HS(filename='hs-math.csv',dictionary={}):
             c_inf.honors           = st_inf[8]
             c_inf.sum2_gr          = st_inf[9]
             #c_inf.cman             = st_inf[10] no clue what this is
-            c_inf.High_School      = st_inf[11]
+            c_inf.High_School      = str.upper(st_inf[11])
             c_inf.course_source    = st_inf[12]
             #c_inf.course_label     = somecoursematcher( descr )
             st.hsCourses.append(c_inf)
@@ -440,39 +442,43 @@ def read_3sCgrades(filename='Encrypted-Math-Sequences.txt',dictionary={}):
                     [line[4*x+1],line[4*x+2],line[4*x+3],line[4*x+4]])
     return dictionary
 
-def read_grades_csun(
-        fname='data/ecrypted-math-grades-all-students.txt',dictionary={}):
-    with open(fname,'r') as f:
-        for line in f.readlines():
-            line = line.rstrip()
-            fields = line.split("|")
-            sid = b16tob64(fields[0])
-            if sid in dictionary:
-                st = dictionary[sid]
-            else:
-                dictionary[sid] = Student(sid)
-                st = dictionary[sid]
-            st.c
+#def read_grades_csun(
+#        fname='data/ecrypted-math-grades-all-students.txt',dictionary={}):
+#    with open(fname,'r') as f:
+#        for line in f.readlines():
+#            line = line.rstrip()
+#            fields = line.split("|")
+#            sid = b16tob64(fields[0])
+#            if sid in dictionary:
+#                st = dictionary[sid]
+#            else:
+#                dictionary[sid] = Student(sid)
+#                st = dictionary[sid]
+#            st. 
 
-## read persistance data
-#
-def read_Persistance_Data(filename='data/Encrypted-Student-Persistence-Data.txt',
-        dictionary={}):
-    with open(filename,'r') as f:
-        for line in f.readlines():
-            line = line.rstrip()
-            fields = line.split("|")
-            sid = b16tob64(fields[0])
-            if sid in dictionary:
-                st = dictionary[sid]
-            else: 
-                dictionary[sid] = Student(sid)
-                st = dictionary[sid]
-            st.first_term= fields[1]
-            st.last_term=fields[2]
-            st.grad_term=fields[3]
-    return dictionary
+def read_College_Seq(fname='Encrypted-Math-Sequences.txt',dct={}):
+    f = open(fname,'r')
 
+    for l in f.readlines():
+        st = read_a_sequence(l)
+        if st.sid in dct:
+            dct[st.sid].collegeSeq = st.collegeSeq
+        else: 
+            dct[st.sid] = st
+    return dct
+
+## reads the terms-codes-graddates file
+def read_Progress(filename='data/terms-codes-graddates.txt',dct={}):
+    f = open(filename,'r')
+    for line in f.readlines():
+        l = line.split('|')
+        if not(l[0] in dct):
+            dct[l[0]] = Student(l[0])
+        st = dct[l[0]]
+        st.first_term = l[1]
+        st.last_term = l[2]
+        st.grad_term = l[3]
+    return dct
 
 ## need to change the names of the input variables to avoid confusion.
 def big_merge(hsd,csd):
@@ -487,3 +493,16 @@ def big_merge(hsd,csd):
             combined[s] = hsd[s]
             combined[s].collegeSeq = csd[s].collegeSeq
     return combined
+
+## read a file that has the name of every school in California and get the 
+#   highschool names.
+def read_CA_SCHOOL_FILE():
+    f= open("CA-school-names.txt",'r')
+    hsnames={}
+    f.readline()
+    for line in f.readlines():
+        sinfo = line.split('\t')
+        if int(sinfo[19]) > 0: # index 19 is number of 12th grade students
+            #hsnames[sinfo[3]]= [sinfo[0],sinfo[3],sinfo[19]]
+            hsnames[str.upper(sinfo[3][:20])]=str.upper(sinfo[3][:20])
+    return hsnames

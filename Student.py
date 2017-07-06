@@ -13,13 +13,16 @@ class Student:
         self.first_term = None
         self.last_term = None
         self.grad_term = None
-        
+        self.current_major = None
+        self.majors = []
+##### enrollment info #####
+        self.sequential_term_classification = []
 
 ## returns a list of courseNames
     def hs_course_names(self):
         lsOfCnames = []
         for course in self.hsCourses:
-            lsOfCnames.append(course[0])
+            lsOfCnames.append(course.getCourseName())
         return lsOfCnames
 
 ## Checks if student is californian by zipcode. 
@@ -149,8 +152,10 @@ class HSCourse:
         #self.cman not a clue what this means
         self.High_School = None
         self.course_source =None # options seem to be "LIST" or "MANL"
-        self.course_label =None
         # this is the part where it actually gets alterred
+        self.course_best_match=None
+        self.course_label =None
+        
 
     def asList(self):
        return [self.hs_crs_nbr, 
@@ -162,16 +167,40 @@ class HSCourse:
                self.honors,
                self.sum2_gr,
                self.High_School,
-               self.course_source , 
+               self.course_source, 
                self.course_label] 
 
     def showAll(self):
         print(str(self.descr))
+##
+    def getCourseName(self):
+        if self.course_label != None:
+            return self.course_label
+        else:
+            return self.descr
 
-#not sure if this should be college course sequence or just single course info
-#class CollegeSequence:
- #   def __init__(self):
+## Match the course name to something else:
+#   
+#   manipfunc : str -> str
+#               Massages the input to make it easier to work with.
+#               Default is the identity function.
+#   dictionary contains a dictionary of courses to compare against.
+#    def matchName(self,manipfunc=(lambda x, x),dictionary):
+#        return False ##NOT YET IMPLEMENTED.
 
+## College Course
+class Course:
+    def __init__(self,nam=None,sem=None,gra=None,un=None):
+        self.name = nam
+        self.semester = sem
+        self.grade = gra
+        self.units = un
+
+## Major info (perstudent)
+#
+#class Major:
+#    def __init__(self):
+#        self.
 
 # some functions to help find info in the collegeSeq's
 def term(colCor): 
