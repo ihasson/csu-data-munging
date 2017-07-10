@@ -5,8 +5,8 @@ gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
                 'C+':2.3,'C':2.0,'C-':1.7, 
                 'D+':1.3,'D':1.0,'D-':0.7,
                 'F':0.0, 'W':0.0,'WU':0.0,   
-                'CR':2.0, 'NC':0.0, 'RP':1.0 # RP stands for repeat
-                #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
+                'CR':2.0, 'NC':0.0, 'RP':0.94 # RP stands for repeat
+                #,'X1':?, 'X2':? # not enterred symbols on app-dat
                 }
 
 
@@ -18,16 +18,44 @@ class Student:
         self.sid = sid   # Must be base64 encoded and uniquely identifying.
         self.hsCourses = [] # each course has pattern [name,grade1,grade2]
         self.hsOldCNames = [] # Course names prior to labeling.
-        self.collegeSeq = []
-        self.zipcode = None
+        self.collegeSeq = [] # old list format
+        self.ccDict = {} # quick lookup dictionary of college courses
+        #self.zipcode = None #Don't have this
         self.first_term = None
         self.last_term = None
         self.grad_term = None
         self.current_major = None
         self.majors = []
+        self.cCourses = [] # has new object format
         #self.college course info and progress
 ##### enrollment info #####
         self.sequential_term_classification = []
+
+## collegeSeq to ccDict and cCourses
+    def oldCourseInfoToNew(self):
+        if len(self.cCourses) == 0:
+            for e in self.collegeSeq:
+                self.cCourses.append(Course(e[0],e[1],e[3],e[2]))
+        if len(self.ccDict) == 0:
+            for e in self.cCourses:
+                if e.name in self.ccDict:
+                    self.ccDict[e.name].append(e)
+                else:
+                    self.ccDict[e.name] = [e]
+                
+
+## gpa_raw e.g. not adjusted for things like retakes
+    def gpa_raw(self):
+        grade_sum = 0 #grade val times units
+        unit_sum = 0
+        for c in self.cCourses:
+            unit_sum+= c.units
+            grade_sum += (c.grade_val * c.units)
+        return grade_sum/unit_sum
+     
+##
+## gpa_adjusted 
+   # def gpa(self):
 
 ## returns a list of courseNames
     def hs_course_names(self):
@@ -203,8 +231,15 @@ class Course:
     def __init__(self,nam=None,sem=None,gra=None,un=None):
         self.name = nam
         self.semester = sem
-        self.grade = gra
-        self.units = un
+        self.grade_letter = gra
+        self.units = int(un)
+        self.grade_val = None
+        self.repeat = gra == 'RP' # this course's grade got replaced
+        if gra in gradesMap:
+            self.grade_val = gradesMap[gra] 
+        else:
+            self.grade_val = 0.0
+            self.units = 0
 
 ## Major info (perstudent)
 #

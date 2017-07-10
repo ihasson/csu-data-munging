@@ -20,7 +20,21 @@ def readall():
     data = rd.read_Large_HS(dictionary=data)
     data = rd.read_College_Seq(dct=data)
     data = rd.read_Progress(dct=data)
+    for e in data:
+        data[e].oldCourseInfoToNew()
     return data
+
+## general filter for Student
+def and_filter(indct,fnlist):
+    outdct = {}
+    for stdnt in indct:
+        st = indct[stdnt]
+        clause = True
+        for f in fnlist:
+            clause = (clause and f(st))
+        if clause:
+            outdct[stdnt] = st
+    return outdct
 
 
 def filter1(data):
@@ -219,6 +233,7 @@ def droppedOut(dct):
         dropout=cat+'_dropout'
         current=cat+'_current'
         grad=cat+'_grad'
+        rate=cat+'_dropout_rate'
         outcomes[dropout] = 0
         outcomes[current] = 0
         outcomes[grad] = 0
@@ -231,8 +246,78 @@ def droppedOut(dct):
             #drop out otherwise
             if grad_term != 9999:
                 outcomes[grad] += 1
-            elif (current_term - last_term) < 20:
+            elif (current_term - last_term) < 10:
                 outcomes[current] += 1
             else:
                 outcomes[dropout] += 1
+        outcomes[rate] = (outcomes[dropout] / 
+                (outcomes[dropout]+outcomes[current]+outcomes[grad]))
+        outcomes[cat+'_total'] = len(dct[cat])
     return outcomes
+
+def startYear(data):
+    start_year = lambda x: str(int(x).__floordiv__(10))
+    #data = readall()
+    #data = filter1(readall())
+    #data = rd.read_Progress(dct=rd.read_College_Seq())
+    startTermDct = {}
+    for e in data:
+        if data[e].first_term != None:
+            term = start_year(data[e].first_term)
+            if term in startTermDct:
+                startTermDct[term].append(data[e])
+            else:
+                startTermDct[term] = [data[e]]
+    return startTermDct
+
+## should also filter for incoming freshmen only
+def graduationRateByStartYear():
+    start_year = lambda x: str(int(x).__floordiv__(10))
+    #data = readall()
+    data = filter1(readall())
+    #data = rd.read_Progress(dct=rd.read_College_Seq())
+    startTermDct = {}
+    for e in data:
+        if data[e].first_term != None:
+            term = start_year(data[e].first_term)
+            if term in startTermDct:
+                startTermDct[term].append(data[e])
+            else:
+                startTermDct[term] = [data[e]]
+    return droppedOut(startTermDct)
+
+def groupGPA(dct):
+    outcomes = {}
+    for e in dct:
+        gsum =0
+        usum=0
+        for stdnt in dct[e]:
+            for c in dct[e][stdnt].cCourses:
+                gsum += c.grade_val * c.units
+                usum += c.units
+        if usum > 0:
+            outcomes[e] = gsum/usum
+    return outcomes
+
+def partitionByRetention(dct):
+    outdct = {'drop':{},'current':{},'grad':{}}
+    for e in dct:
+        gradTerm = int(dct[e].grad_term)
+        lastTerm = int(dct[e].last_term)
+        thisTerm = 2177
+        if gradTerm != 9999:
+            outdct['grad'][e] = dct[e]
+        elif (thisTerm - lastTerm) <= 10:
+            outdct['current'][e] = dct[e]
+        else: 
+            outdct['drop'][e] = dct[e]
+    return outdct
+
+## assume the dictionary contains students.
+def mapOverDct(dct,fn):
+
+## 
+def foldOverDct()
+
+
+        
