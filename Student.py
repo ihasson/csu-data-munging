@@ -1,6 +1,16 @@
-import zipcode
+# Provides numeric values for grade strings.
+# Need to change scores for non-letter 
+gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
+                'B+':3.3,'B':3.0,'B-':2.7,
+                'C+':2.3,'C':2.0,'C-':1.7, 
+                'D+':1.3,'D':1.0,'D-':0.7,
+                'F':0.0, 'W':0.0,'WU':0.0,   
+                'CR':2.0, 'NC':0.0, 'RP':1.0 # RP stands for repeat
+                #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
+                }
 
-# class definition for student may want to create sub classes for
+
+## class definition for student may want to create sub classes for
 # highschool application and 
 class Student:
     
@@ -15,6 +25,7 @@ class Student:
         self.grad_term = None
         self.current_major = None
         self.majors = []
+        #self.college course info and progress
 ##### enrollment info #####
         self.sequential_term_classification = []
 
@@ -25,48 +36,47 @@ class Student:
             lsOfCnames.append(course.getCourseName())
         return lsOfCnames
 
-## Checks if student is californian by zipcode. 
-#   For now just returns false because not implemented.
-    def is_californian(self):
-        if self.zipcode == None:
-            return False
-        else: 
-            return (self.zipcode.state == 'CA')
+## Sets the courselabels for all hs courses using the function provided
+# 
+    def set_hs_course_labels(self,matchfun):
+        for h in self.hsCourses:
+            h.set_course_label(matchfun)
 
-# returns the (guessed) valuation of how much math the student did
-    def hs_score(self):
-        return multiHSCtoNum(self.hs_course_names())
-        
+## only the comments need to be updated
 # Can take either string or list of strings. 
 # True if student has taken any of the strings.
 # Currently does not check grades.
 # return a boolean
-    def tookHSCourse(self, nameOfCourse):
-        if nameOfCourse is str:
-            coursesTaken = self.hs_course_names()
-            courseIdNum = hsClassesDict[nameOfCourse]
-            for e in coursesTaken:
-               if hsClassesDict[e] == courseIdNum:
-                   return True
-            return False
-        elif nameOfCourse is list:
-            if len(nameOfCourse) >=1: 
-                return (tookHSCourse(nameOfCourse.pop) or 
-                        tookHSCourse(nameOfCourse))
-        else: 
-            return False
-        
-# extract some number from the college course sequences to use as a feature
-    def col_seqScore(self):
-        best = 0
-        for course in self.collegeSeq :
-            if grade(course) in gradesMap:
-                cnum = int(re.findall('[0-9]+',cname(course))[0])
-                if gradesMap[grade(course)] > 0 and cnum > best:
-                    best = cnum
-        return best
+    def tookHSCourse(self, nameOfCourse,label=False):
+        for hsc in self.hsCourses:
+            if label:
+                if nameOfCourse == hsc.course_label:
+                    return True
+            else:
+                if nameOfCourse == hsc.descr:
+                    return True
+        return False
+## similar to tookHSCourse but takes a function as an argument
+#  the function this takes must return a boolean.
+#  returns true as soon as in function returns true.
+    def tookHSCourse_f(self, function):
+        for hsc in self.hsCourses:
+            if function(hsc):
+                return True
+        return False
 
-#make dictionary for single student's college sequences
+#should remove soon.
+## extract some number from the college course sequences to use as a feature
+#    def col_seqScore(self):
+#        best = 0
+#        for course in self.collegeSeq :
+#            if grade(course) in gradesMap:
+#                cnum = int(re.findall('[0-9]+',cname(course))[0])
+#                if gradesMap[grade(course)] > 0 and cnum > best:
+#                    best = cnum
+#        return best
+
+## make dictionary for single student's college sequences
     def dictizeCSeq(self):
         dictionary = []
         for c in self.collegeSeq :
@@ -75,19 +85,16 @@ class Student:
                     'units':units(c), 'term':term(c)
                     })
         return dictionary
-    def listifyCSeq(self):
-        l = []
-        for c in self.collegeSeq :
-            l.append([cname(c), gradesMap[grade(c)],units(c),term(c)])
-        return l
     
-# show college course info
+## show college course info
     def show_collegeSeq(self):
         print(self.collegeSeq)
 
+## need to update Still?
 # show highschool course info
     def show_hsCourses(self):
-        print(self.hsCourses)
+        for c in self.hsCourses:
+            c.showAll()
 
 # make dictionary for single student's highschool records.
     def dictizeHSC(self):
@@ -131,13 +138,11 @@ class Student:
             else: print("error in Student.fist_math()" + str(earliest[0]) )
         return earliest
 
-#forgot what this is for.
-# Make a dictionary object
-    def dictize(self):
-        #s = int.from_bytes(base64.b64decode(self.sid +"=="),'big')
-        return {'SID': self.sidInt(), 'CS': self.listifyCSeq()[0][0],
-                'HS':self.hs_score() 
-                }
+## Shows all available information about the student
+    #def showall(self):
+
+
+
 
 class HSCourse:
     def __init__(self):
@@ -156,7 +161,6 @@ class HSCourse:
         self.course_best_match=None
         self.course_label =None
         
-
     def asList(self):
        return [self.hs_crs_nbr, 
                self.hs_grade_level,
@@ -172,7 +176,13 @@ class HSCourse:
 
     def showAll(self):
         print(str(self.descr))
-##
+
+## Sets the course_label using the passed in function
+#
+    def set_course_label(self,matchfun):
+        self.course_label = matchfun(self.descr)
+
+## Returns a course name. Should not be used with course match.
     def getCourseName(self):
         if self.course_label != None:
             return self.course_label

@@ -2,6 +2,18 @@ import readData as rd
 import Student
 import pickle
 import pandas as pd
+import courseMatcher as cm
+
+# Provides numeric values for grade strings.
+# Need to change scores for non-letter 
+gradesMap = {  'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values
+                'B+':3.3,'B':3.0,'B-':2.7,
+                'C+':2.3,'C':2.0,'C-':1.7, 
+                'D+':1.3,'D':1.0,'D-':0.7,
+                'F':0.0, 'W':0.0,'WU':0.0,   
+                'CR':2.0, 'NC':0.0, 'RP':1.0 # RP stands for repeat
+                #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
+                }
 
 def readall():
     data = {}
@@ -11,19 +23,7 @@ def readall():
     return data
 
 
-def filter(data):
-    filtered_data = {}
-    for s in data:
-        st = data[s]
-        #if ((len(st.hsCourses)>0) and (len(st.collegeSeq)>0) and
-        #        st.is_californian() and (st.first_term != None)
-        #        and (st.last_term != None) and (st.grad_term != None)):
-        if (len(st.hsCourses)>0 and len(st.collegeSeq)>0 and                
-                (st.first_term != None)):
-            filtered_data[s] = st
-    return filtered_data
-
-def filter2(data):
+def filter1(data):
     l = {}
     for s in data:
         st = data[s]
@@ -35,14 +35,24 @@ def filter2(data):
 def save(dct):
     with open("datafile.txt","wb") as f:
         pickle.dump(dct, f)
+        #f.close()
 
 def load_data():
     with open("datafile.txt","rb") as f:
         return pickle.load(f)
 
+## filter by start term.
+def term_filter(in_dct,term="2097"):
+    termnum = int(term)
+    out_dct={}
+    for st in in_dct:
+        if int(in_dct[st].first_term) >= termnum:
+            out_dct[st] = in_dct[st]
+    return out_dct
+
 
 ## take N from dictionary and return as list.
-def TakeN(dct,num=100):
+def takeN(dct,num=100):
     lout = []
     l = list(dct)
     for i in  range(num):
@@ -97,3 +107,132 @@ def find_harvard_students(sdct={}):
                 harvard_students[st] = sdct[st]
     return harvard_students
 
+
+def read_and_match():
+    dct = filter1(readall())
+    mfun = cm.construct_matchfun()
+    for s in dct:
+        dct[s].set_hs_course_labels(mfun)
+    return dct
+
+## not sure what to name this it returns results about how courses were labeled
+def f(dct):
+    matched = {}
+    matchedLabel = {}
+    notMatched = {}
+    for st in dct:
+        for hsc in dct[st].hsCourses:
+            if hsc.course_label == 'unknown':
+                if hsc.descr in notMatched:
+                    notMatched[hsc.descr] += 1
+                else: 
+                    notMatched[hsc.descr] = 1
+            else: 
+                if hsc.course_label in matchedLabel:
+                    if hsc.descr in matchedLabel[hsc.course_label]:
+                        matchedLabel[hsc.course_label][hsc.descr] += 1
+                    else:
+                        matchedLabel[hsc.course_label][hsc.descr] = 1
+                else:
+                    matchedLabel[hsc.course_label] = {hsc.descr: 1}
+                if hsc.descr in matched:
+                    matched[hsc.descr] += 1
+                else: 
+                    matched[hsc.descr] = 1
+    return matched,notMatched,matchedLabel
+
+def tookCourse(dct,cname,label=False):
+    outls = []
+    for e in dct:
+        if dct[e].tookHSCourse(cname,label):
+            outls.append(dct[e])
+    return outls
+
+## Returns a dictionary of students who took algebra2 broken up by grade.
+#  Students who repeated the course will be counted twice.
+def took_algebra2_when(dct):
+    g9=[]
+    g10=[]
+    g11=[]
+    g12=[]
+    ingrade = lambda glvl,hscourse: hscourse.hs_grade_level == glvl
+    alg2 = lambda hscourse: hscourse.course_label == 'algebra2'
+    for s in dct:
+        tookcourse = dct[s].tookHSCourse_f
+        if tookcourse(lambda hc: alg2(hc) and ingrade('9',hc)):
+            g9.append(dct[s])
+        if tookcourse(lambda hc: alg2(hc) and ingrade('10',hc)):
+            g10.append(dct[s])
+        if tookcourse(lambda hc: alg2(hc) and ingrade('11',hc)):
+            g11.append(dct[s])
+        if tookcourse(lambda hc: alg2(hc) and ingrade('12',hc)):
+            g12.append(dct[s])
+    return {'grade9':g9, 'grade10':g10, 'grade11':g11, 'grade12':g12}
+
+def dct_by_gradelvl_math(dct,gradelvl='12'):
+    outdct={'no_math':[]}
+    for s in dct:
+        no_g12_math = True
+        dupcatch={} # add course labels to this to prevent duplicate students 
+        for e in dct[s].hsCourses:
+            if e.hs_grade_level == gradelvl:
+                if not(e.course_label in  dupcatch):
+                    dupcatch[e.course_label] = True
+                    no_g12_math = False
+                    if e.course_label in outdct:
+                        outdct[e.course_label].append(dct[s])
+                    else:
+                        outdct[e.course_label] = [dct[s]]
+        if no_g12_math:
+            outdct['no_math'].append(dct[s])
+    return outdct
+
+
+## Takes a dictionary of lists as input. Returns what the key implies in
+#   terms of passing or failing or failing the first math course.
+#   
+def first_course_grades(dct):
+    pfg={}
+    for cat in dct:
+        p=cat+'_pass'
+        f=cat+'_fail'
+        pfg[p] = 0
+        pfg[f] = 0
+        for st in dct[cat]:
+            st.collegeSeq.sort()
+            if st.collegeSeq[0][3] in gradesMap: 
+                if gradesMap[st.collegeSeq[0][3]] >= 2.0:
+                    pfg[p] += 1
+                else: 
+                    pfg[f] += 1
+            else:
+                print("WARNING  " +st.collegeSeq[0][3]+ "  not a grade")
+                print(st.sid)
+            ratio=cat+'_fail_rate'
+            pfg[ratio] = (pfg[f]/(pfg[f]+pfg[p]))
+    return pfg
+
+##
+def droppedOut(dct):
+    outcomes={}
+    for cat in dct:
+        dropout=cat+'_dropout'
+        current=cat+'_current'
+        grad=cat+'_grad'
+        outcomes[dropout] = 0
+        outcomes[current] = 0
+        outcomes[grad] = 0
+        for st in dct[cat]:
+            grad_term = int(st.grad_term)
+            last_term = int(st.last_term)
+            current_term = 2177
+            #grad := gradterm != 9999
+            #inprogress := gradterm == 9999 and current - last term < 10
+            #drop out otherwise
+            if grad_term != 9999:
+                outcomes[grad] += 1
+            elif (current_term - last_term) < 20:
+                outcomes[current] += 1
+            else:
+                outcomes[dropout] += 1
+    return outcomes

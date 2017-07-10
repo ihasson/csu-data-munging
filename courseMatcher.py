@@ -21,6 +21,7 @@
 #from fuzzywuzzy import StringMatcher as strM
 import re
 import sys
+from fuzzywuzzy import StringMatcher as strmat
 
 #note: precalc equivalencies may be subject to change.
 apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
@@ -74,17 +75,21 @@ def readAndClean(fileList):
                 #print( cname +"\t" + closest )
     return dataset
 
+## does some cleaning on text to reduce howmuch needs to be dealt with.
 def justClean(string):
     try:
         cname = string
+        cname = cname.replace('III','3')
         cname = cname.replace('II','2')
+        cname = cname.replace('iii','3')
+        cname = cname.replace('ii','2')
         cname = cname.lower()
         cname = re.sub("\(.*\)","",cname)
         cname = re.sub("common core","",cname)
         cname = re.sub("honors","",cname)
         cname = re.sub("ap ","",cname)
         cname = re.sub("h(\.)? ","",cname)
-        cname.strip()
+        cname = cname.strip()
         return cname
     except:
         print(string)
@@ -109,7 +114,25 @@ def findClosest(string, maxDist=7, cantFind="unknown", listOfNames=None):
         if dist < bestdistance :
             bestdistance = dist
             bestMatch = c
+        if bestdistance == 0: break
     return bestMatch
+
+## same as find closest but also returns distance
+def findClosest_wd(string, maxDist=7, cantFind="unknown", listOfNames=None):
+    if listOfNames == None:
+        knownclasses = ['algebra 1', 'algebra 2', 'geometry', 'calculus',
+                    'pre-calculus', 'trigonometry', 'statistics',
+                    'math analysis', 'trig/alg', 'alg/trig', 'algebra']
+    else: knownclasses = listOfNames 
+    bestMatch = cantFind
+    bestdistance = maxDist
+    for c in knownclasses:
+        dist = strmat.distance(c,string) 
+        if dist < bestdistance :
+            bestdistance = dist
+            bestMatch = c
+        if bestdistance == 0: break
+    return bestMatch,bestdistance
 
 def generate_overfit_map():
     verimap = {}
@@ -119,5 +142,45 @@ def generate_overfit_map():
             categ = categ.strip()
             name = name.strip()
             verimap[name] = categ
+    verimap['unknown'] = 'unknown'
     return verimap
 
+#need to add some way to add per label rules more easily
+def construct_matchfun():
+    courseDct= generate_overfit_map()
+    improvedCourseDct={}
+    for oldcname in courseDct:
+        newcname = justClean(oldcname)
+        improvedCourseDct[newcname] = courseDct[oldcname]
+    namelist=list(improvedCourseDct)
+    print(namelist)
+    def func(x): 
+        if x in courseDct:
+            return courseDct[x]
+        modName = justClean(x)
+        if modName == 'm': 
+            return 'old_data'
+        if modName in improvedCourseDct:
+            return improvedCourseDct[modName]
+        #print(bestMatch)
+        bestMatch,distance = findClosest_wd(modName, 
+                maxDist=6,listOfNames=namelist)
+        # have to guard algebra2 against algrebra 1
+        if improvedCourseDct[bestMatch] == 'algebra2':
+            if (modName.find('1') > -1) or (modName.find('2') < 4):
+                print("%s   is bad" % modName)
+                improvedCourseDct[modName] = 'bad'
+                return 'bad'
+            else:
+                return 'algebra2'
+        elif distance < 3:
+            improvedCourseDct[modName] = improvedCourseDct[bestMatch]
+            #print(modName,bestMatch,str(distance))
+            return improvedCourseDct[bestMatch]
+        elif distance < 6:
+            print("Best Match of    %s     is to    %s    with dist= %d" 
+                    % (x, bestMatch, distance))
+            return improvedCourseDct[bestMatch]
+        print("No Match Found   %s" % x)
+        return 'unknown'
+    return func

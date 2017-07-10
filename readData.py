@@ -406,22 +406,6 @@ def read_Large_HS(filename='hs-math.csv',dictionary={}):
             st.hsCourses.append(c_inf)
     return dictionary
 
-## read zipcodes.
-# 
-def read_zip(filename='data/Encrypted-Student-Zip-Codes.txt',dictionary={}):
-    with open(filename,'r') as f:
-        for line in f.readlines():
-            line = line.rstrip()
-            line = line.split(",")
-            sid = b16tob64(line[0])
-            if sid in dictionary:
-                st = dictionary[sid]
-            else: 
-                dictionary[sid] = Student(sid)
-                st = dictionary[sid]
-            st.zipcode = line[1] 
-    return dictionary
-
 ## reads college sequences only for those 3 schools.
 # 
 def read_3sCgrades(filename='Encrypted-Math-Sequences.txt',dictionary={}):
@@ -441,20 +425,6 @@ def read_3sCgrades(filename='Encrypted-Math-Sequences.txt',dictionary={}):
                 st.collegeSeq.append(
                     [line[4*x+1],line[4*x+2],line[4*x+3],line[4*x+4]])
     return dictionary
-
-#def read_grades_csun(
-#        fname='data/ecrypted-math-grades-all-students.txt',dictionary={}):
-#    with open(fname,'r') as f:
-#        for line in f.readlines():
-#            line = line.rstrip()
-#            fields = line.split("|")
-#            sid = b16tob64(fields[0])
-#            if sid in dictionary:
-#                st = dictionary[sid]
-#            else:
-#                dictionary[sid] = Student(sid)
-#                st = dictionary[sid]
-#            st. 
 
 def read_College_Seq(fname='Encrypted-Math-Sequences.txt',dct={}):
     f = open(fname,'r')
