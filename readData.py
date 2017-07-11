@@ -440,6 +440,7 @@ def read_College_Seq(fname='Encrypted-Math-Sequences.txt',dct={}):
 ## reads the terms-codes-graddates file
 def read_Progress(filename='data/terms-codes-graddates.txt',dct={}):
     f = open(filename,'r')
+    f.readline()
     for line in f.readlines():
         l = line.split('|')
         if not(l[0] in dct):

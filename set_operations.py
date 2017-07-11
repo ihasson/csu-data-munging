@@ -41,9 +41,9 @@ def filter1(data):
     l = {}
     for s in data:
         st = data[s]
-        if len(st.hsCourses) > 0:
-            if len(st.collegeSeq) > 0:
-                l[s] = st
+        if ((len(st.hsCourses) > 0) and (len(st.collegeSeq) > 0) and 
+                (int(st.first_term) >= 2040) ):
+            l[s] = st
     return l
 
 def save(dct):
@@ -315,9 +315,25 @@ def partitionByRetention(dct):
 
 ## assume the dictionary contains students.
 def mapOverDct(dct,fn):
+    dctout = {}
+    for e in dct:
+        dctout[e] = fn(dct[e])
+    return dctout
 
 ## 
-def foldOverDct()
+def foldOverDct(dct,fn):
+    ls = list(dct)
+    def foldover(l,d,f):
+        if len(l)==1:
+            return d[l.pop()]
+        else:
+            return f(d[l.pop()],foldover(l,d,f))
+    return foldover(ls,dct,fn)
 
+def stlstToDct(ls):
+    dct={}
+    for e in ls:
+        dct[e.sid] = e
+    return dct
 
         
