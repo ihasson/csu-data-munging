@@ -477,3 +477,20 @@ def read_CA_SCHOOL_FILE():
             #hsnames[sinfo[3]]= [sinfo[0],sinfo[3],sinfo[19]]
             hsnames[str.upper(sinfo[3][:20])]=str.upper(sinfo[3][:20])
     return hsnames
+
+# will need to modify this and Student
+## reads the cohorts information
+def read_Cohorts(fname='data/cohorts.txt',dct={},header=True):
+    f = open(fname,'r')
+    if header: f.readline()
+    for line in f.readlines():
+        line = line.strip()
+        sid,cohort,term=line.split('|')
+        if not(sid in dct):
+            dct[sid] = Student(sid)
+        stdnt = dct[sid]
+        stdnt.cohort['term'] = term
+        stdnt.cohort['cohort'] = cohort
+    f.close()
+    return dct
+

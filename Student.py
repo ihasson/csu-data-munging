@@ -30,6 +30,7 @@ class Student:
         #self.college course info and progress
 ##### enrollment info #####
         self.sequential_term_classification = []
+        self.cohort = {'term':None,'cohort':None}
 
 ## collegeSeq to ccDict and cCourses
     def oldCourseInfoToNew(self):
@@ -250,17 +251,9 @@ class Course:
 # some functions to help find info in the collegeSeq's
 def term(colCor): 
     return colCor[0]
-
 def cname(colCor): 
     return int(re.findall('[0-9]+',colCor[1])[0])
 
-# Converts the base64 encoded student id from the highschooldata to 
-# base16 encoding to conform with the new data.
-# Some massaging of the out put string may be needed.
-def sid64tosid16(str64):
-    if not(str64.find("==")):
-        str64 = str64 + "=="
-    return base64.b16encode(base64.b64decode(str64))
 
 # Takes a course from the college sequences and returns the info from the 
 # term field.

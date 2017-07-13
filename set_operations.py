@@ -20,6 +20,7 @@ def readall():
     data = rd.read_Large_HS(dictionary=data)
     data = rd.read_College_Seq(dct=data)
     data = rd.read_Progress(dct=data)
+    data = rd.read_Cohorts(dct=data)
     for e in data:
         data[e].oldCourseInfoToNew()
     return data
@@ -37,7 +38,7 @@ def and_filter(indct,fnlist):
     return outdct
 
 
-def filter1(data):
+def filter_has_hs_and_college(data):
     l = {}
     for s in data:
         st = data[s]
@@ -49,11 +50,12 @@ def filter1(data):
 def save(dct):
     with open("datafile.txt","wb") as f:
         pickle.dump(dct, f)
-        #f.close()
+        f.close()
 
 def load_data():
     with open("datafile.txt","rb") as f:
-        return pickle.load(f)
+        d = pickle.load(f)
+        return d
 
 ## filter by start term.
 def term_filter(in_dct,term="2097"):
@@ -123,7 +125,7 @@ def find_harvard_students(sdct={}):
 
 
 def read_and_match():
-    dct = filter1(readall())
+    dct = filter_has_hs_and_college(readall())
     mfun = cm.construct_matchfun()
     for s in dct:
         dct[s].set_hs_course_labels(mfun)
@@ -205,7 +207,7 @@ def dct_by_gradelvl_math(dct,gradelvl='12'):
 ## Takes a dictionary of lists as input. Returns what the key implies in
 #   terms of passing or failing or failing the first math course.
 #   
-def first_course_grades(dct):
+def compute_first_course_grades(dct):
     pfg={}
     for cat in dct:
         p=cat+'_pass'
@@ -255,15 +257,20 @@ def droppedOut(dct):
         outcomes[cat+'_total'] = len(dct[cat])
     return outcomes
 
+## returns a dictionary with start years as keys and val consisting of a LIST
+#  of the students who started that year.
 def startYear(data):
+    yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
+            '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
+            '214':'2014','215':'2015','216':'2016','217':'2017'}
     start_year = lambda x: str(int(x).__floordiv__(10))
     #data = readall()
-    #data = filter1(readall())
+    #data = filter_has_hs_and_college(readall())
     #data = rd.read_Progress(dct=rd.read_College_Seq())
     startTermDct = {}
     for e in data:
         if data[e].first_term != None:
-            term = start_year(data[e].first_term)
+            term = yrmap[start_year(data[e].first_term)]
             if term in startTermDct:
                 startTermDct[term].append(data[e])
             else:
@@ -274,7 +281,7 @@ def startYear(data):
 def graduationRateByStartYear():
     start_year = lambda x: str(int(x).__floordiv__(10))
     #data = readall()
-    data = filter1(readall())
+    data = filter_has_hs_and_college(readall())
     #data = rd.read_Progress(dct=rd.read_College_Seq())
     startTermDct = {}
     for e in data:
@@ -330,10 +337,19 @@ def foldOverDct(dct,fn):
             return f(d[l.pop()],foldover(l,d,f))
     return foldover(ls,dct,fn)
 
+## converts a list of students to a dictionary
 def stlstToDct(ls):
     dct={}
     for e in ls:
         dct[e.sid] = e
     return dct
 
-        
+#don't use this now
+# for making a dictionary into pairs of dataname and data all in list
+#   form
+def dctToDataLists(dct):
+    outlist=[]
+    for e in dct:
+        outlist.append([e,dct[e]])
+    return outlist
+
