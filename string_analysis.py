@@ -25,7 +25,7 @@ class Elt:
 # 
 class Element :
     def __init__(self, string):
-        #print string
+        #print( string)
         self.string = string
 
     def setNum(self, num):
@@ -115,9 +115,9 @@ def levenshteinDist(stringA,stringB):
             upleft = matrix[row-1][col-1] + l
             matrix[row][col] = min((upleft,up,left))
    
-    #print matrix 
+    #print(matrix) 
     a = matrix[len(stringA)][len(stringB)]
-    #print a
+    #print( a)
     return a
 
 def getData(filelist):
@@ -152,7 +152,7 @@ def getDistances(medians,dataset):
 def avgDistances(data):
     avgs = []
     n = len(data)
-    print n
+    print(n)
     for e in data:
         avgs.append((float(sum(e[1]))/n , e[0]))
     return avgs
@@ -182,7 +182,7 @@ def findWorst():
     for e in ls :
         newresults.append(e[1])
     for e in newresults :
-        print e.name +"      "+e.centroid[1] +" "+ str(e.centroid[0])
+        print( e.name +"      "+e.centroid[1] +" "+ str(e.centroid[0]))
 
 # find most common by 5 nearest neighbors
 def cluster2():
@@ -217,7 +217,7 @@ def runKMedoids():
     return kmedoids(stringlist, centroids1, 25)
 
 def kmedoids(list_of_strings,starting_centroids, iterations):
-    print starting_centroids
+    print( starting_centroids)
     if iterations == 0:
 
         return starting_centroids
@@ -235,7 +235,57 @@ def kmedoids(list_of_strings,starting_centroids, iterations):
                     bestCent = c
                     bestDist = distance
             bestCent.add_element(s.name) 
-            #print str(bestDist) +"  " + bestCent.centroid
+            #print( str(bestDist) +"  " + bestCent.centroid)
         for c in centroids :
             resultMedoids.append(c.find_medoid())
         return kmedoids(list_of_strings, resultMedoids, iterations-1)
+    
+
+def tokenize(cnames):
+    tokenized = [] # should pick better names
+    for c in cnames:
+        c = c.replace("II","2")
+        c = c.lower()
+        tokens = c.split(" ")
+        tokenized.append(tokens)
+    return tokenized 
+
+def uniquetokens(tokenMatrix):
+    ls = []
+    for a in tokenMatrix:
+        for t in a:
+            ls.append(t)
+    #ls = ls.sort()
+
+    features={}
+    result = []
+    c = ls[0]
+    features[c] = ls[0]
+    dummyVar = 0
+    for b in ls:
+        if b in features.keys():
+            dummyVar += 1
+        else: 
+            features[b] = b
+            result.append(b)
+    return result
+
+def tabulateTokenIntersection():
+    cnames= tokenize(extractHSCourseNames())
+    tokenlist = uniquetokens(cnames)
+    tab = np.tile(0,(len(tokenlist),len(tokenlist)))
+    for i in range(len(tokenlist)):
+        for j in range(len(tokenlist)):
+            for e in cnames:
+                imatch = False
+                jmatch = False
+                for f in e:
+                    if f == tokenlist[i] and f == tokenlist[j]:
+                        print(f)
+                    if f == tokenlist[j]:
+                        jmatch = True
+                    if f == tokenlist[i]:
+                        imatch = True
+                if imatch and jmatch:
+                    tab[i,j] = tab[i,j] + 1
+    return tab,tokenlist
