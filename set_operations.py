@@ -18,11 +18,12 @@ gradesMap = {  'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values
 def readall():
     data = {}
     data = rd.read_Large_HS(dictionary=data)
-    data = rd.read_College_Seq(dct=data)
+    rd.read_College_Courses(dct=data)
+    #data = rd.read_College_Seq(dct=data # possibly need to reenable this.)
     data = rd.read_Progress(dct=data)
     data = rd.read_Cohorts(dct=data)
-    for e in data:
-        data[e].oldCourseInfoToNew()
+    #for e in data:                     #and this
+    #    data[e].oldCourseInfoToNew()
     return data
 
 ## general filter for Student
@@ -42,10 +43,19 @@ def filter_has_hs_and_college(data):
     l = {}
     for s in data:
         st = data[s]
-        if ((len(st.hsCourses) > 0) and (len(st.collegeSeq) > 0) and 
-                (int(st.first_term) >= 2040) ):
+        if ((len(st.hsCourses) > 0) and (len(st.cCourses) > 0) and 
+                (int(st.cohort_term) >= 2040) ):
             l[s] = st
     return l
+
+## filter by start term.
+def term_filter(in_dct,term="2097"):
+    termnum = int(term)
+    out_dct={}
+    for st in in_dct:
+        if int(in_dct[st].first_term) >= termnum:
+            out_dct[st] = in_dct[st]
+    return out_dct
 
 def save(dct):
     with open("datafile.txt","wb") as f:
@@ -56,15 +66,6 @@ def load_data():
     with open("datafile.txt","rb") as f:
         d = pickle.load(f)
         return d
-
-## filter by start term.
-def term_filter(in_dct,term="2097"):
-    termnum = int(term)
-    out_dct={}
-    for st in in_dct:
-        if int(in_dct[st].first_term) >= termnum:
-            out_dct[st] = in_dct[st]
-    return out_dct
 
 
 ## take N from dictionary and return as list.
@@ -114,7 +115,7 @@ def student_hs():
             studentSchools[h.High_School] = h.High_School
     return studentSchools
 
-## result was neither student wound up matriculating.
+# result was neither student wound up matriculating.
 def find_harvard_students(sdct={}):
     harvard_students = {}
     for st in sdct:
@@ -123,6 +124,11 @@ def find_harvard_students(sdct={}):
                 harvard_students[st] = sdct[st]
     return harvard_students
 
+# maybe there should be a class for all of this.
+def set_hs_course_labels(sdct,):
+    mfun = cm.construct_matchfun()
+    for k,s in sdct : s.set_hs_course_labels(mfun)
+    return sdct
 
 def read_and_match():
     dct = filter_has_hs_and_college(readall())
@@ -242,7 +248,7 @@ def droppedOut(dct):
         for st in dct[cat]:
             grad_term = int(st.grad_term)
             last_term = int(st.last_term)
-            current_term = 2177
+            current_term = 2167
             #grad := gradterm != 9999
             #inprogress := gradterm == 9999 and current - last term < 10
             #drop out otherwise
@@ -271,6 +277,8 @@ def startYear(data):
     for e in data:
         if data[e].first_term != None:
             term = yrmap[start_year(data[e].first_term)]
+        #if data[e].cohort_term != None:
+        #    term = yrmap[start_year(data[e].cohort_term)]
             if term in startTermDct:
                 startTermDct[term].append(data[e])
             else:
@@ -278,7 +286,7 @@ def startYear(data):
     return startTermDct
 
 ## should also filter for incoming freshmen only
-def graduationRateByStartYear():
+def graduationRateByStartYear(data):
     start_year = lambda x: str(int(x).__floordiv__(10))
     #data = readall()
     data = filter_has_hs_and_college(readall())
@@ -311,7 +319,7 @@ def partitionByRetention(dct):
     for e in dct:
         gradTerm = int(dct[e].grad_term)
         lastTerm = int(dct[e].last_term)
-        thisTerm = 2177
+        thisTerm = 2167
         if gradTerm != 9999:
             outdct['grad'][e] = dct[e]
         elif (thisTerm - lastTerm) <= 10:
@@ -353,3 +361,17 @@ def dctToDataLists(dct):
         outlist.append([e,dct[e]])
     return outlist
 
+def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
+    outSet={}
+    for sid,stdnt in dataSet.items():
+        if allowed_cohort_type(stdnt):
+            if stdnt.cohort_term in outSet:
+                outSet[stdnt.cohort_term][sid] = stdnt
+            else:
+                outSet[stdnt.cohort_term] = {sid:stdnt}
+    return outSet
+    
+#def otherFiltering(data,FTF=True,FTT=True):
+#    outData = {}
+#    for key,s in data.items():
+#        if (
