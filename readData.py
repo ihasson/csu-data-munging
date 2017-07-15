@@ -25,6 +25,7 @@ import re
 import sys
 from Student import HSCourse
 from Student import Student
+from Student import Course
 #from Student import CollegeSequence
 
 # For mapping highschool course names to integers.
@@ -426,7 +427,8 @@ def read_3sCgrades(filename='Encrypted-Math-Sequences.txt',dictionary={}):
                     [line[4*x+1],line[4*x+2],line[4*x+3],line[4*x+4]])
     return dictionary
 
-def read_College_Seq(fname='Encrypted-Math-Sequences.txt',dct={}):
+# only reads math courses
+def read_College_MATH(fname='Encrypted-Math-Sequences.txt',dct={}):
     f = open(fname,'r')
 
     for l in f.readlines():
@@ -489,8 +491,47 @@ def read_Cohorts(fname='data/cohorts.txt',dct={},header=True):
         if not(sid in dct):
             dct[sid] = Student(sid)
         stdnt = dct[sid]
-        stdnt.cohort['term'] = term
-        stdnt.cohort['cohort'] = cohort
+        stdnt.cohort_term = term
+        stdnt.cohort_type = cohort
     f.close()
     return dct
+
+def read_Math_SAT(fname='data/sat-data.txt',dct={},header=True):
+    f = open(fname,'r')
+    if header: f.readline()
+    for line in f.readlines():
+        line = line.strip()
+        sid,score = line.split()
+        if not(sid in dct):
+            dct[sid] = Student(sid)
+        dct[sid].sat_math
+    return dct
+
+def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
+        header=True):
+    f = open(fname,'r')
+    if header: f.readline
+    def breakthrees(lst,accum=[]):
+        if len(lst) < 3:
+            return accum,lst
+        elif len(lst) == 3:
+            a,b,c = lst
+            accum.append([a,b,c])
+            return accum,[]
+        else:
+            a,b,c,*rest = lst
+            accum.append([a,b,c])
+            return breakthrees(rest,accum)
+    for line in f.readlines():
+        sid,term,*rest = line.strip().split('|')
+        if not(sid in dct):
+            dct[sid] = Student(sid)
+        courses,leftover = breakthrees(rest,[])
+        if len(leftover) > 0: print(leftover)
+        for c in courses:
+            nc = Course(nam=c[0],sem=term,gra=c[2],un=c[1])
+            dct[sid].cCourses.append(nc)
+            dct[sid].add_to_ccDict(nc)
+    return dct
+
 

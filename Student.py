@@ -30,7 +30,16 @@ class Student:
         #self.college course info and progress
 ##### enrollment info #####
         self.sequential_term_classification = []
-        self.cohort = {'term':None,'cohort':None}
+        self.cohort_type = None # should be FTF or FTT
+        self.cohort_term = None 
+        self.sat_math = None
+
+## adds course to ccDict
+    def add_to_ccDict(self,crs) -> "input must be Course":
+        if crs.name in self.ccDict:
+            self.ccDict[crs.name].append(crs)
+        else:
+            self.ccDict[crs.name] = [crs]
 
 ## collegeSeq to ccDict and cCourses
     def oldCourseInfoToNew(self):
@@ -233,7 +242,7 @@ class Course:
         self.name = nam
         self.semester = sem
         self.grade_letter = gra
-        self.units = int(un)
+        self.units = float(un)
         self.grade_val = None
         self.repeat = gra == 'RP' # this course's grade got replaced
         if gra in gradesMap:
