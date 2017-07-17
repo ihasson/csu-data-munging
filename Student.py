@@ -52,7 +52,22 @@ class Student:
                     self.ccDict[e.name].append(e)
                 else:
                     self.ccDict[e.name] = [e]
-                
+## grade12 math
+    def grd12math(self):
+        out = {}
+        for e in self.hsCourses:
+            if e.hs_grade_level == '12':
+                out[e.course_label] = self.sid
+        if len(out) == 0: print('no course name?!?')
+          #  out = {'None':self.sid}
+        return out
+
+## gets hs courses
+    def hs_courses(self, labeled=True):
+        out = {}
+        for e in self.hsCourses:
+            out[e.course_label] = self.sid
+        return out
 
 ## gpa_raw e.g. not adjusted for things like retakes
     def gpa_raw(self):
@@ -103,16 +118,9 @@ class Student:
                 return True
         return False
 
-#should remove soon.
-## extract some number from the college course sequences to use as a feature
-#    def col_seqScore(self):
-#        best = 0
-#        for course in self.collegeSeq :
-#            if grade(course) in gradesMap:
-#                cnum = int(re.findall('[0-9]+',cname(course))[0])
-#                if gradesMap[grade(course)] > 0 and cnum > best:
-#                    best = cnum
-#        return best
+## Has graduated college?
+    def hasGraduated(self):
+        return (int(self.grad_term) < 9999)
 
 ## make dictionary for single student's college sequences
     def dictizeCSeq(self):
@@ -226,6 +234,8 @@ class HSCourse:
             return self.course_label
         else:
             return self.descr
+
+## need a get grade func.
 
 ## Match the course name to something else:
 #   

@@ -125,9 +125,9 @@ def find_harvard_students(sdct={}):
     return harvard_students
 
 # maybe there should be a class for all of this.
-def set_hs_course_labels(sdct,):
+def set_hs_course_labels(sdct):
     mfun = cm.construct_matchfun()
-    for k,s in sdct : s.set_hs_course_labels(mfun)
+    for k,s in sdct.items() : s.set_hs_course_labels(mfun)
     return sdct
 
 def read_and_match():
@@ -207,6 +207,24 @@ def dct_by_gradelvl_math(dct,gradelvl='12'):
                         outdct[e.course_label] = [dct[s]]
         if no_g12_math:
             outdct['no_math'].append(dct[s])
+    return outdct
+
+def partition_by_gradelvl_math(dct,gradelvl='12'):
+    outdct={'no_math':{}}
+    for s in dct:
+        no_g12_math = True
+        dupcatch={} # add course labels to this to prevent duplicate students 
+        for e in dct[s].hsCourses:
+            if e.hs_grade_level == gradelvl:
+                if not(e.course_label in  dupcatch):
+                    dupcatch[e.course_label] = True
+                    no_g12_math = False
+                    if e.course_label in outdct:
+                        outdct[e.course_label][s] = dct[s]
+                    else:
+                        outdct[e.course_label]= {s:dct[s]}
+        if no_g12_math:
+            outdct['no_math'][s] = dct[s]
     return outdct
 
 
@@ -314,6 +332,10 @@ def groupGPA(dct):
             outcomes[e] = gsum/usum
     return outcomes
 
+## partionByRetention
+#  partitions dict into sub dicts based on retention
+#   dropout is defined by a student having not taken a course since
+#   for a year prior to fall 2017 and has not graduated.
 def partitionByRetention(dct):
     outdct = {'drop':{},'current':{},'grad':{}}
     for e in dct:
@@ -375,3 +397,28 @@ def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
 #    outData = {}
 #    for key,s in data.items():
 #        if (
+
+def partitionBylastHSMath(dct):
+    return mapOverDct(dct_by_gradelvl_math(dct),stlstToDct)
+
+## depth must be an integer >= 1
+def mapOverNestedDct(dictionary,function,depth):
+    if depth == 1:
+        return mapOverDct(dictionary,function)
+    else:
+        return mapOverNestedDct(dictionary,
+                lambda x: mapOverDct(x,function),
+                depth - 1)
+
+## map for map where the dictionar(y/ies) that gets mapped over is the 
+# deepest in the nested dictionary
+#def mapOverNestedDct_byDeepest(dictionary,function):
+#    if type(dictionary) != dict:
+#        # should be throwing an exception here.
+#        # and should also really be a try catch block
+#        print("mapOverNestedDct_byDeepest, ERROR")
+#        return None
+#    def checkNesting(dictionary,):
+#        k,d = dictionary.items()
+#
+#
