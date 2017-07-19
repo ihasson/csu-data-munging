@@ -15,18 +15,8 @@ gradesMap = {  'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values
                 #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
                 }
 
-def readall():
-    data = {}
-    data = rd.read_Large_HS(dictionary=data)
-    rd.read_College_Courses(dct=data)
-    #data = rd.read_College_Seq(dct=data # possibly need to reenable this.)
-    data = rd.read_Progress(dct=data)
-    data = rd.read_Cohorts(dct=data)
-    #for e in data:                     #and this
-    #    data[e].oldCourseInfoToNew()
-    return data
-
 ## general filter for Student
+# takes a list of functions
 def and_filter(indct,fnlist):
     outdct = {}
     for stdnt in indct:
@@ -56,16 +46,6 @@ def term_filter(in_dct,term="2097"):
         if int(in_dct[st].first_term) >= termnum:
             out_dct[st] = in_dct[st]
     return out_dct
-
-def save(dct):
-    with open("datafile.txt","wb") as f:
-        pickle.dump(dct, f)
-        f.close()
-
-def load_data():
-    with open("datafile.txt","rb") as f:
-        d = pickle.load(f)
-        return d
 
 
 ## take N from dictionary and return as list.
@@ -209,6 +189,7 @@ def dct_by_gradelvl_math(dct,gradelvl='12'):
             outdct['no_math'].append(dct[s])
     return outdct
 
+## 'patitions' dict by math course in particular grade.
 def partition_by_gradelvl_math(dct,gradelvl='12'):
     outdct={'no_math':{}}
     for s in dct:
@@ -319,6 +300,7 @@ def graduationRateByStartYear(data):
                 startTermDct[term] = [data[e]]
     return droppedOut(startTermDct)
 
+## averages the grades of all students in a dictionary
 def groupGPA(dct):
     outcomes = {}
     for e in dct:
@@ -383,6 +365,7 @@ def dctToDataLists(dct):
         outlist.append([e,dct[e]])
     return outlist
 
+## returns dict broken up by Cohort year
 def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
     outSet={}
     for sid,stdnt in dataSet.items():
@@ -392,7 +375,8 @@ def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
             else:
                 outSet[stdnt.cohort_term] = {sid:stdnt}
     return outSet
-    
+
+## returns dict partitioned by last HS course(s)
 def partitionBylastHSMath(dct):
     return mapOverDct(dct_by_gradelvl_math(dct),stlstToDct)
 
@@ -405,9 +389,11 @@ def mapOverNestedDct(dictionary,function,depth):
                 lambda x: mapOverDct(x,function),
                 depth - 1)
 
-def idenfun(x,y):
+## should really be cons function.
+def idenfun(x,y=[]):
     return [x,y]
 
+## a nested Fold function to use with dictionaries
 def nestedFoldr(dictionary,accumulator,fun=idenfun,depth=1) -> "for dict":
     def foldr(dct,bin_fun,accum):
         acc = accum
@@ -425,4 +411,160 @@ def nestedFoldr(dictionary,accumulator,fun=idenfun,depth=1) -> "for dict":
             accum2 = nestedFoldr(val,fun,depth-1,accum2)
         return accum2
 
+
+def showall(d):
+    for x in d.keys():
+        a = d[x]
+        print(a.sid)
+        print(a.hsCourses)
+        print(a.collegeSeq)
+
+#Maps a list of highschool courses to integer values via the 
+#global hsClassesDict.
+#Returns the sum of the class values if multiple in input
+#Emptylists and unknownkeys are zero.
+def multiHSCtoNum(hsClasses):
+    resultRank = 0
+    for e in hsClasses:
+        if e in hsClassesDict:
+            rank = hsClassesDict[e]
+            resultRank = resultRank + rank
+    return resultRank
+
+
+def searchByHsScore(dictionary,mi,ma):
+    foundlist = []
+    for sid in dictionary:
+        student = dictionary[sid]
+        if (student.hs_score() > mi) and (student.hs_score() < ma):
+            foundlist.append(sid)
+            print(sid + "       "+ str(student.hs_score()))
+    rcolCor[1]
+    return foundlist
+
+
+#doesn't even seem to work
+#prob of ??? given course ? was taken
+def everyoneThatTookHS(allStudents, courseName):
+    setIcareAbout = []
+    for s in allStudents:
+        if s.tookHSCourse(courseName): 
+            setIcareAbout.append(s)
+    return setIcareAbout
+
+#I think I can get rid of this one.
+# a method to count all students who took a course but probably doesn't
+# deduplicate
+def countStudents(allstudents,l):
+    n = 0
+    for e in l:
+        n += len(everyoneThatTookHS(allstudents, e))
+    return n
+
+#this implementation is dumb. Need to replace with dictionary based one later.
+#A static method for finding the intersection of two student lists.
+def intersection(a,b):
+    c = []
+    for x in a:
+        for y in b:
+            if x.sid == y.sid :
+                c.append(y)
+    return c
+
     
+# can't remember what this is for
+#def relabel_func(string ,dictionary=hsClassesDict):
+#    courselist = list(dictionary.keys()) 
+#    s = courseMatcher.justClean(string)
+#    s = courseMatcher.findClosest(s,maxDist=4,listOfNames=courselist)
+#    return dictionary[s]
+
+
+#already deduplicates
+def get_dict_by_courses(allstudent_info):
+    info = {}
+    for a_student in allstudent_info:
+        for course in a_student.hsCourses:
+            cname = course[0]
+            if cname in info:
+                info[cname][a_student.sid]= a_student
+            else: 
+                info[cname] = {}
+                info[cname][a_student.sid] = a_student
+    return info
+
+def dict_to_list(d):
+    ls = []
+    for k in d.keys():
+        ls.append(d[k])
+    return ls
+
+#can't remember if this has deduplication
+def took_course(name,st_data_arr):
+    count = 0
+    students=[]
+    for st in st_data_arr:
+        took = 0
+        for e in st.hsCourses:
+            if e[0] == name:
+                if took == 0: students.append(st)
+                took = 1
+        count += took
+    return students
+
+##Is intended to be given all student info in the form of a list of Student 
+#objects. 
+#Returns a dictionary of highschool course dictionaries each containing the
+#students reported to have taken the class in their last year of highschool.
+#
+def get_dict_by_courses(allstudent_info):
+    info = {}
+    info['total'] = {}
+    for a_student in allstudent_info:
+        info['total'][a_student.sid] = a_student
+        for course in a_student.hsCourses:
+            cname = course[0]
+            if cname in info:
+                info[cname][a_student.sid]= a_student
+            else: 
+                info[cname] = {}
+                info[cname][a_student.sid] = a_student
+    return info
+
+#need to rename
+#currently only gives how many people took each course.
+#Sum of all counts should be greater than the total students due to 
+#intersection
+def summary_counts(inf_d):
+    for k in inf_d.keys():
+        print(k)
+        print(len(inf_d[k]))
+
+## Checks for which students gave all grades.
+# Probably has lots of bugs but don't want to bother fixing it because most
+# students never inputed their grades so it's not even worth counting seriously.
+def gave_all_grades(stList):
+    count=0
+    for es in stList:
+        bad = 0
+        for ec in es.hsCourses:
+            if ( (ec[1] != 'X1' and ec[1] != 'X2') and 
+                    (ec[2] != 'X1' and ec[2] != 'X2')):
+                bad = 1
+        count += bad
+    return count
+
+## Only one student at a time and returns pair where the first val is grades 
+# submitted and second is how many classes.
+# similar to gave_all_grades but actually worth implementing
+# Still treats a blank as having submitted.
+def grades_submitted_per_class(st):
+    grades = 0
+    classes = 0
+    for c in st.hsCourses:
+        classes += 1
+        if c[1] != 'X1':
+            grades += 1
+        if c[2] != 'X2':
+            grades += 1
+    return (grades,classes)

@@ -26,6 +26,7 @@ import sys
 from Student import HSCourse
 from Student import Student
 from Student import Course
+import pickle
 #from Student import CollegeSequence
 
 # For mapping highschool course names to integers.
@@ -179,6 +180,7 @@ def get_sequences(fileName):
             sList.append(read_a_sequence(line))
     return sList
 
+## Construct dictionary for 3 school anal
 #convenient command for construction of dictionary of student information
 def constructDictionary():
     hsdict = {}
@@ -203,66 +205,6 @@ def makeStList():
         stlist.append(stdict[key])
     return stlist
 
-
-def showall(d):
-    for x in d.keys():
-        a = d[x]
-        print(a.sid)
-        print(a.hsCourses)
-        print(a.collegeSeq)
-
-#Maps a list of highschool courses to integer values via the 
-#global hsClassesDict.
-#Returns the sum of the class values if multiple in input
-#Emptylists and unknownkeys are zero.
-def multiHSCtoNum(hsClasses):
-    resultRank = 0
-    for e in hsClasses:
-        if e in hsClassesDict:
-            rank = hsClassesDict[e]
-            resultRank = resultRank + rank
-    return resultRank
-
-
-def searchByHsScore(dictionary,mi,ma):
-    foundlist = []
-    for sid in dictionary:
-        student = dictionary[sid]
-        if (student.hs_score() > mi) and (student.hs_score() < ma):
-            foundlist.append(sid)
-            print(sid + "       "+ str(student.hs_score()))
-    rcolCor[1]
-    return foundlist
-
-
-#doesn't even seem to work
-#prob of ??? given course ? was taken
-def everyoneThatTookHS(allStudents, courseName):
-    setIcareAbout = []
-    for s in allStudents:
-        if s.tookHSCourse(courseName): 
-            setIcareAbout.append(s)
-    return setIcareAbout
-
-#I think I can get rid of this one.
-# a method to count all students who took a course but probably doesn't
-# deduplicate
-def countStudents(allstudents,l):
-    n = 0
-    for e in l:
-        n += len(everyoneThatTookHS(allstudents, e))
-    return n
-
-#this implementation is dumb. Need to replace with dictionary based one later.
-#A static method for finding the intersection of two student lists.
-def intersection(a,b):
-    c = []
-    for x in a:
-        for y in b:
-            if x.sid == y.sid :
-                c.append(y)
-    return c
-
 #can't remember what this is for
 def constructDataTable():
     students = makeStList()
@@ -270,109 +212,6 @@ def constructDataTable():
     for stu in students:
         dataForMatching.append([stu.oldCnames[0],stu.hsCourses[0]])
 
-# can't remember what this is for
-def relabel_func(string ,dictionary=hsClassesDict):
-    courselist = list(dictionary.keys()) 
-    s = courseMatcher.justClean(string)
-    s = courseMatcher.findClosest(s,maxDist=4,listOfNames=courselist)
-    return dictionary[s]
-
-#should be an instance method of student but don't want to bother.
-def show_records(st):
-    print(st.sid)
-    print(st.hsCourses)
-    print(st.hsOldCNames)
-    print(st.collegeSeq)
-    print("\n")
-
-#already deduplicates
-def get_dict_by_courses(allstudent_info):
-    info = {}
-    for a_student in allstudent_info:
-        for course in a_student.hsCourses:
-            cname = course[0]
-            if cname in info:
-                info[cname][a_student.sid]= a_student
-            else: 
-                info[cname] = {}
-                info[cname][a_student.sid] = a_student
-    return info
-
-def dict_to_list(d):
-    ls = []
-    for k in d.keys():
-        ls.append(d[k])
-    return ls
-
-#can't remember if this has deduplication
-def took_course(name,st_data_arr):
-    count = 0
-    students=[]
-    for st in st_data_arr:
-        took = 0
-        for e in st.hsCourses:
-            if e[0] == name:
-                if took == 0: students.append(st)
-                took = 1
-        count += took
-    return students
-
-#Is intended to be given all student info in the form of a list of Student 
-#objects. 
-#Returns a dictionary of highschool course dictionaries each containing the
-#students reported to have taken the class in their last year of highschool.
-#
-def get_dict_by_courses(allstudent_info):
-    info = {}
-    info['total'] = {}
-    for a_student in allstudent_info:
-        info['total'][a_student.sid] = a_student
-        for course in a_student.hsCourses:
-            cname = course[0]
-            if cname in info:
-                info[cname][a_student.sid]= a_student
-            else: 
-                info[cname] = {}
-                info[cname][a_student.sid] = a_student
-    return info
-
-#need to rename
-#currently only gives how many people took each course.
-#Sum of all counts should be greater than the total students due to 
-#intersection
-def summary_counts(inf_d):
-    for k in inf_d.keys():
-        print(k)
-        print(len(inf_d[k]))
-
-## Checks for which students gave all grades.
-# Probably has lots of bugs but don't want to bother fixing it because most
-# students never inputed their grades so it's not even worth counting seriously.
-def gave_all_grades(stList):
-    count=0
-    for es in stList:
-        bad = 0
-        for ec in es.hsCourses:
-            if ( (ec[1] != 'X1' and ec[1] != 'X2') and 
-                    (ec[2] != 'X1' and ec[2] != 'X2')):
-                bad = 1
-        count += bad
-    return count
-
-## Only one student at a time and returns pair where the first val is grades 
-# submitted and second is how many classes.
-# similar to gave_all_grades but actually worth implementing
-# Still treats a blank as having submitted.
-def grades_submitted_per_class(st):
-    grades = 0
-    classes = 0
-    for c in st.hsCourses:
-        classes += 1
-        if c[1] != 'X1':
-            grades += 1
-        if c[2] != 'X2':
-            grades += 1
-    return (grades,classes)
 
 ## reads a particular formatted file of student transcripts
 #  not sure what to do with this now that it is clear that the highschool data
@@ -439,6 +278,20 @@ def read_College_MATH(fname='Encrypted-Math-Sequences.txt',dct={}):
             dct[st.sid] = st
     return dct
 
+## read the major data
+def read_Majors(filename='data/majors.txt',dct={},header=True):
+    f = open(filename,'r')
+    if header: f.readline()
+    for line in f.readlines():
+        sid,*tm = line.strip().split('|')
+        if not(sid in dct):
+            dct[sid] = Student(sid)
+        for i in range(len(tm)/2):
+            dct[sid].majors.append((tm[i+0],tm[i+1]))
+    # add some logic to fill last_major,first_major,current_major etc...
+    return dct
+
+
 ## reads the terms-codes-graddates file
 def read_Progress(filename='data/terms-codes-graddates.txt',dct={}):
     f = open(filename,'r')
@@ -501,7 +354,7 @@ def read_Math_SAT(fname='data/sat-data.txt',dct={},header=True):
     if header: f.readline()
     for line in f.readlines():
         line = line.strip()
-        sid,score = line.split()
+        sid,score = line.split('|')
         if not(sid in dct):
             dct[sid] = Student(sid)
         dct[sid].sat_math
@@ -534,4 +387,27 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
             dct[sid].add_to_ccDict(nc)
     return dct
 
+## a read all the data I have function
+def readall():
+    data = {}
+    data = rd.read_Large_HS(dictionary=data)
+    rd.read_College_Courses(dct=data)
+    #data = rd.read_College_Seq(dct=data # possibly need to reenable this.)
+    data = rd.read_Progress(dct=data)
+    data = rd.read_Cohorts(dct=data)
+    data = rd.read_MATH_SAT(dct=data)
+    #for e in data:                     #and this
+    #    data[e].oldCourseInfoToNew()
+    return data
+
+## convenient save function
+def save(dct):
+    with open("datafile.txt","wb") as f:
+        pickle.dump(dct, f)
+        f.close()
+## loads back the data from the above save
+def load_data():
+    with open("datafile.txt","rb") as f:
+        d = pickle.load(f)
+        return d
 

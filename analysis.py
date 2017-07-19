@@ -87,3 +87,23 @@ def fullResultsTablesBy_g12Math(dataSet):
 #    for mc,time in data.itmes():
 #        if mc in results:
 #            for sids,time in 
+
+# need the standard deviation formula
+# sigma^2 = E[(X - mu)^2]
+def meanDct(dataSet):
+    accum = 0
+    size = len(dataSet)
+    for key,e in dataSet.items():
+        accum += e
+    return accum
+
+def varDct(dataSet):
+    accum = 0
+    mu = meanDct(dataSet)
+    size = len(dataSet)
+    for k,e in dataSet.items():
+        accum+= (e - mu)**2
+    return (accum/size)
+
+# correlation coeff.
+#def rho()
