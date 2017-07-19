@@ -393,11 +393,6 @@ def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
                 outSet[stdnt.cohort_term] = {sid:stdnt}
     return outSet
     
-#def otherFiltering(data,FTF=True,FTT=True):
-#    outData = {}
-#    for key,s in data.items():
-#        if (
-
 def partitionBylastHSMath(dct):
     return mapOverDct(dct_by_gradelvl_math(dct),stlstToDct)
 
@@ -410,15 +405,24 @@ def mapOverNestedDct(dictionary,function,depth):
                 lambda x: mapOverDct(x,function),
                 depth - 1)
 
-## map for map where the dictionar(y/ies) that gets mapped over is the 
-# deepest in the nested dictionary
-#def mapOverNestedDct_byDeepest(dictionary,function):
-#    if type(dictionary) != dict:
-#        # should be throwing an exception here.
-#        # and should also really be a try catch block
-#        print("mapOverNestedDct_byDeepest, ERROR")
-#        return None
-#    def checkNesting(dictionary,):
-#        k,d = dictionary.items()
-#
-#
+def idenfun(x,y):
+    return [x,y]
+
+def nestedFoldr(dictionary,accumulator,fun=idenfun,depth=1) -> "for dict":
+    def foldr(dct,bin_fun,accum):
+        acc = accum
+        for key,e in dct.items():
+            if acc == None:
+                acc = e
+            else:
+                bin_fun(accum,e)
+        return accum
+    if depth == 1:
+        return foldr(dictionary,fun,accumulator)
+    else:
+        accum2 = accumulator
+        for key,val in dictionary.items():
+            accum2 = nestedFoldr(val,fun,depth-1,accum2)
+        return accum2
+
+    

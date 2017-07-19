@@ -76,8 +76,28 @@ class Student:
         for c in self.cCourses:
             unit_sum+= c.units
             grade_sum += (c.grade_val * c.units)
-        return grade_sum/unit_sum
-     
+        try:
+            return grade_sum/unit_sum
+        except ZeroDivisionError as err:
+            print('bad student: ',self.sid)
+            return -1
+
+## has first term instead of cohort
+    def length_of_stay(self):
+        return int(self.last_term) - int(self.first_term)
+
+## more convenient time to graduate
+    def time_to_grad2(self):
+        return int(self.grad_term)-int(self.cohort_term)
+
+## time to graduate
+    def time_to_grad(self):
+        gt = int(self.grad_term)
+        if gt == 9999:
+            return -1
+        else :
+            return gt -int(self.cohort_term)
+        
 ##
 ## gpa_adjusted 
    # def gpa(self):
@@ -131,6 +151,59 @@ class Student:
                     'units':units(c), 'term':term(c)
                     })
         return dictionary
+
+##  number of semesters with summer counted as half
+    def number_of_terms(self):
+        semesters={}
+        for e in self.cCourses:
+            semesters[e.semester] = 1
+        return len(semesters)
+
+## number of units total
+    def units_total(self):
+        units = 0
+        for e in self.cCourses:
+            units += e.units
+        return units
+
+## grade-counts
+    def grade_counts(self):
+        grades = {}
+        for e in self.cCourses:
+            if e.grade_letter in grades:
+                grades[e.grade_letter] += 1
+            else:
+                grades[e.grade_letter] = 1
+        return grades
+
+## graduating major
+# should have ben last major
+    def last_major(self):
+        try:
+            self.majors.sort()
+            self.majors.reverse()
+            return self.majors[0][1]
+        except IndexError as err:
+            print('abberant student:    ',self.sid)
+            return 'None'
+
+## gives a stat summary    
+    def results(self):
+        summary={
+                'cohort_type': self.cohort_type,
+                'cohort_term': self.cohort_term,
+                'grad':self.hasGraduated(),
+                #'current':
+                #'drop_out':
+                'time_at_csun':self.length_of_stay(),
+                'term_count':self.number_of_terms(),
+                'units_total':self.units_total(),
+                #'last_major':self.last_major(),
+                'ruff_gpa': self.gpa_raw()
+                }
+        for key,num in self.grade_counts().items():
+            summary[key] = num
+        return summary
     
 ## show college course info
     def show_collegeSeq(self):
@@ -181,7 +254,7 @@ class Student:
             if e[0].isnumeric():
                 if int(earliest[0]) > int(e[0]):
                     earliest = e
-            else: print("error in Student.fist_math()" + str(earliest[0]) )
+            else: print("error in Student.first_math()" + str(earliest[0]) )
         return earliest
 
 ## Shows all available information about the student

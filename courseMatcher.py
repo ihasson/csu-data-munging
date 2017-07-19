@@ -25,7 +25,15 @@ from fuzzywuzzy import StringMatcher as strmat
 
 #note: precalc equivalencies may be subject to change.
 apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
-        'math_anal' 'trigonometry' 'geo_alg_trig' 'precalc': 'precalc'}
+        'math_anal' 'trigonometry' 'precalc': 'precalc'}
+
+calculusReadiness = {'calculus' 'tigonometry' 'precalc' 'trig_and_precalc'
+        'math_anal' :'calculus ready',
+        'algebra2' 'algebra1' 'adv_math' 'geometry''adv_app_math' 
+        'alg_trig' :'Not calculus ready',
+        'bad' 'discrete_math' 'accounting' 'stats' 'bade' 'prob' 'geo_alg_trig' 
+        'inter_alg' :'unknown',
+        'no_math':'no_math'}
 
 def levenshteinDist(stringA,stringB):
     try:

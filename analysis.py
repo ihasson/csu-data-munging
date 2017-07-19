@@ -1,6 +1,7 @@
 from set_operations import *
 import pickle
 
+
 def read_filter_match_FTF_ONLY():
     d = filter_has_hs_and_college(readall())
     hs = and_filter(d,[lambda x: x.cohort_type == 'FTF'])
@@ -68,3 +69,21 @@ def partition_cohort_outcome_g12math(dataSet):
     coho_reten = mapOverDct(cohorts,partitionByRetention)
     return mapOverNestedDct(coho_reten,partitionBylastHSMath,2)
 
+def partition_g12math_timeToGrad(dataSet):
+    d = partitionBylastHSMath(dataSet)
+    d2 = mapOverNestedDct(d,lambda x: x.time_to_grad2(),2)
+    return d2
+
+def fullResultsTablesBy_g12Math(dataSet):
+    p = partitionBylastHSMath(dataSet)
+    d = mapOverNestedDct(p,lambda x: x.results(),2)
+    dfDCT = {}
+    for key,data in d.items(): 
+        dfDCT[key] = pd.DataFrame(data).transpose().fillna(0.0)
+    return dfDCT
+
+#def timetogradanal(data):
+#    results = {}
+#    for mc,time in data.itmes():
+#        if mc in results:
+#            for sids,time in 
