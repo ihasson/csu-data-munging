@@ -5,6 +5,9 @@ from readData import save, load_data
 import courseMatcher
 import pandas as pd
 import set_operations as s_op
+import analysis as an
+
+import importlib
 
 def buildFTFDataSet():
     matchFun = courseMatcher.construct_matchfun()
@@ -19,4 +22,14 @@ def buildFTFDataSet():
     data = s_op.and_filter(data,[lambda x: x.cohort_type == 'FTF'])
     for k,s in data.items():
         s.set_hs_course_labels(matchFun)
+    # filter out students who never took a course
+    dataSet1 = {}
+    num_no_course =0
+    for key,e in data.items():
+        if e.gpa_raw() < 0:
+            num_no_course += 1
+        else:
+            dataSet1[key] = e
+    print(num_no_course," students dropped for having no gpa")
+    data = dataSet1
     return data
