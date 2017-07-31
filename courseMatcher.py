@@ -24,8 +24,8 @@ import sys
 from fuzzywuzzy import StringMatcher as strmat
 
 #note: precalc equivalencies may be subject to change.
-apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
-        'math_anal' 'trigonometry' 'precalc': 'precalc'}
+apparent_equivs = {'geometry' : 'geometry',
+        'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
 
 calculusReadiness = {'calculus' 'tigonometry' 'precalc' 'trig_and_precalc'
         'math_anal' :'calculus ready',

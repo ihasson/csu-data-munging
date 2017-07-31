@@ -264,10 +264,10 @@ def droppedOut(dct):
 
 ## returns a dictionary with start years as keys and val consisting of a LIST
 #  of the students who started that year.
-def startYear(data):
+def startYear(data) -> "AVOID USING THIS!!!!":
     yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
             '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
-            '214':'2014','215':'2015','216':'2016','217':'2017'}
+            '214':'2014','215':'2015','216':'2016','217':'2017','203':'2003'}
     start_year = lambda x: str(int(x).__floordiv__(10))
     #data = readall()
     #data = filter_has_hs_and_college(readall())
@@ -568,3 +568,32 @@ def grades_submitted_per_class(st):
         if c[2] != 'X2':
             grades += 1
     return (grades,classes)
+
+def NestedDctTree(dct,depth=1):
+    ls = []
+    count=0
+    for e in dct:
+        if type(dct[e]) == dict:
+            ls.append(NestedDctTree(dct[e], depth + 1))
+    if len(ls) == 0:
+        return depth
+    else:
+        return ls
+
+def partitionByGraduationTerm(dataSet):
+    outDCT = {}
+    for k,e in dataSet.items():
+        if e.grad_term in outDCT:
+            outDCT[e.grad_term][k] = e
+        else:
+            outDCT[e.grad_term] = {k:e}
+    return outDCT
+        
+def partitionByGraduationYear(dataSet):
+    outDCT = {}
+    for k,e in dataSet.items():
+        if e.graduationYear() in outDCT:
+            outDCT[e.graduationYear()][k] = e
+        else:
+            outDCT[e.graduationYear()] = {k:e}
+    return outDCT

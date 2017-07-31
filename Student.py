@@ -9,6 +9,9 @@ gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
                 #,'X1':?, 'X2':? # not enterred symbols on app-dat
                 }
 
+yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
+        '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
+        '214':'2014','215':'2015','216':'2016','217':'2017','203':'2003'}
 
 ## class definition for student may want to create sub classes for
 # highschool application and 
@@ -24,8 +27,10 @@ class Student:
         self.first_term = None
         self.last_term = None
         self.grad_term = None
-        self.current_major = None
+        #self.current_major = None
         self.majors = []
+        self.first_major = None
+        self.last_major = None
         self.cCourses = [] # has new object format
         #self.college course info and progress
 ##### enrollment info #####
@@ -97,7 +102,28 @@ class Student:
             return -1
         else :
             return gt -int(self.cohort_term)
-        
+
+## for use with the transition matrix
+    def courses_by_term(self):
+        semesterDct = {}
+        outDct = {}
+        for e in self.cCourses:
+            if not(e.semester in semesterDct):
+                semesterDct[e.semester] = []
+            semesterDct[e.semester].append(e.name)
+        termMap = {}
+        term = 'term'
+        i = 1
+        semesterlist = list(semesterDct)
+        semesterlist.sort()
+        for k in semesterlist:
+            termN = term+str(i)
+            termMap[k]=termN
+            i+=1
+        for c in semesterDct:
+            outDct[termMap[c]] = semesterDct[c]
+        return outDct
+
 ##
 ## gpa_adjusted 
    # def gpa(self):
@@ -114,6 +140,12 @@ class Student:
     def set_hs_course_labels(self,matchfun):
         for h in self.hsCourses:
             h.set_course_label(matchfun)
+
+    def fourYearGrad(self):
+        return (int(self.grad_term) - int(self.cohort_term) < 50)
+
+    def sixYearGrad(self):
+        return (int(self.grad_term)-int(self.cohort_term) < 70)
 
 ## only the comments need to be updated
 # Can take either string or list of strings. 
@@ -176,7 +208,8 @@ class Student:
                 grades[e.grade_letter] = 1
         return grades
 
-## graduating major
+# this doesn't work
+# graduating major
 # should have ben last major
     def last_major(self):
         try:
@@ -188,23 +221,34 @@ class Student:
             return 'None'
 
 ## gives a stat summary    
-    def results(self):
+    def results(self,highschool=False):
         summary={
                 'cohort_type': self.cohort_type,
                 'cohort_term': self.cohort_term,
                 'grad':self.hasGraduated(),
-                #'current':
-                #'drop_out':
-                'time_at_csun':self.length_of_stay(),
+                'last_term': self.last_term,
+                #'time_at_csun':self.length_of_stay(),
                 'term_count':self.number_of_terms(),
                 'units_total':self.units_total(),
-                #'last_major':self.last_major(),
-                'ruff_gpa': self.gpa_raw()
+                'last_major':self.last_major,
+                'ruff_gpa': self.gpa_raw(),
                 }
         for key,num in self.grade_counts().items():
             summary[key] = num
+        if highschool:
+            summary['num_g12_math'] = len(self.grd12math())
+            summary['g12_math']=list(self.grd12math())
+            summary['MATH_SAT']=self.sat_math
         return summary
     
+    def featureVector(self):
+        return [self.cohort_term,
+                self.hasGraduated(),
+                self.last_major(),
+                self.last_term,
+                self.units_total(),
+                self.gpa_raw()]
+
 ## show college course info
     def show_collegeSeq(self):
         print(self.collegeSeq)
@@ -257,6 +301,15 @@ class Student:
             else: print("error in Student.first_math()" + str(earliest[0]) )
         return earliest
 
+## graduation year without term
+    def graduationYear(self):
+        gy = str(int(self.grad_term).__floordiv__(10))
+        if gy in yrmap:
+            return yrmap[gy]
+        else:
+            return '9999'
+
+
 ## Shows all available information about the student
     #def showall(self):
 
@@ -299,7 +352,11 @@ class HSCourse:
 ## Sets the course_label using the passed in function
 #
     def set_course_label(self,matchfun):
+        apparent_equivs = {'geometry' : 'geometry',
+                'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
         self.course_label = matchfun(self.descr)
+        if self.course_label in apparent_equivs:
+            self.course_label = apparent_equivs[self.course_label]
 
 ## Returns a course name. Should not be used with course match.
     def getCourseName(self):
@@ -327,12 +384,17 @@ class Course:
         self.grade_letter = gra
         self.units = float(un)
         self.grade_val = None
+        self.passed = 0
         self.repeat = gra == 'RP' # this course's grade got replaced
         if gra in gradesMap:
             self.grade_val = gradesMap[gra] 
+            if gradesMap[gra] >= 2.0: self.passed = 1
         else:
             self.grade_val = 0.0
             self.units = 0
+
+    def featureVector(self):
+        return [int(self.semester), self.name, self.units, self.grade_letter]
 
 ## Major info (perstudent)
 #

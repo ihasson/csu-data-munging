@@ -1,6 +1,7 @@
 from set_operations import *
 import pickle
 
+DATASET = rd.load_data()
 
 def read_filter_match_FTF_ONLY():
     d = filter_has_hs_and_college(readall())
@@ -45,6 +46,7 @@ def course_cohort_outcome(dataSet):
         d2[k] = mapOverDct(e,partitionByRetention)
     return d2
 
+## what was this for again?
 def studentToDct(stdnt):
     return {'start_term': stdnt.cohort_term, 'last_term': stdnt.last_term, 
             'grad':stdnt.hasGraduated()}
@@ -70,8 +72,9 @@ def partition_cohort_outcome_g12math(dataSet):
     return mapOverNestedDct(coho_reten,partitionBylastHSMath,2)
 
 def partition_g12math_timeToGrad(dataSet):
-    d = partitionBylastHSMath(dataSet)
-    d2 = mapOverNestedDct(d,lambda x: x.time_to_grad2(),2)
+    d = and_filter(dataSet,[lambda x: x.grad_term != '9999'])
+    d1 = partitionBylastHSMath(d)
+    d2 = mapOverNestedDct(d1,lambda x: x.number_of_terms(),2)
     return d2
 
 def fullResultsTablesBy_g12Math(dataSet):
@@ -82,21 +85,49 @@ def fullResultsTablesBy_g12Math(dataSet):
         dfDCT[key] = pd.DataFrame(data).transpose().fillna(0.0)
     return dfDCT
 
+## 4-year,6-year,all-time, graduation rates
+def graduationRates(dataSet):
+    
+    fourYear = startYear(
+            and_filter(dataSet,[lambda x: x.fourYearGrad()]))
+    fourYear = mapOverDct(fourYear,len)
+    sixYear = startYear(
+            and_filter(dataSet,[lambda x: x.sixYearGrad()]))
+    sixYear = mapOverDct(sixYear,len)
+        
+    ret = partitionByRetention(dataSet)
+    ret_sty=mapOverDct(ret,lambda x: startYear(x))
+    d = mapOverDct(ret_sty, lambda x:mapOverDct(x,lambda y: len(y)))
+    df = pd.DataFrame(d) 
+    df['total'] = df.sum(axis=1)
+    fourandsix = pd.DataFrame({'four_year':fourYear,'six_year':sixYear})
+    df = df.join(fourandsix)
+    df['ret_rate'] = 100*(df['current']+df['grad'])/df['total']
+    df['drop_rate'] = 100*df['drop']/df['total']
+    df['current_rate'] = 100*df['current']/df['total']
+    df['grad_rate'] = 100*df['grad']/df['total']
+    df['six_year_grad_rate'] = 100*df['six_year']/df['total']
+    df['four_year_grad_rate'] = 100*df['four_year']/df['total']
+    df = df.drop(['2003','2013']) #,'2014','2015','2016'])
+    return df
+
 #def timetogradanal(data):
 #    results = {}
 #    for mc,time in data.itmes():
 #        if mc in results:
 #            for sids,time in 
 
-# need the standard deviation formula
+# both of these need improvement
+# the standard deviation formula
 # sigma^2 = E[(X - mu)^2]
 def meanDct(dataSet):
     accum = 0
     size = len(dataSet)
     for key,e in dataSet.items():
         accum += e
-    return accum
+    return (accum/size)
 
+# 
 def varDct(dataSet):
     accum = 0
     mu = meanDct(dataSet)
@@ -107,3 +138,17 @@ def varDct(dataSet):
 
 # correlation coeff.
 #def rho()
+
+## 4-year,6-year,all-time, graduation rates
+def graduationRates2(dataSet):
+    data = and_filter(dataSet,[lambda x: x.hasGraduated()])
+    fourYear = partitionByGraduationYear(
+            and_filter(data,[lambda x: x.fourYearGrad()]))
+    fourYear = mapOverDct(fourYear,len)
+    sixYear = partitionByGraduationYear(
+            and_filter(data,[lambda x: x.sixYearGrad()]))
+    sixYear = mapOverDct(sixYear,len)
+    graduated = mapOverDct(partitionByGraduationYear(data),len)
+    df = pd.DataFrame({'4ygrad':fourYear,'6ygrad':sixYear,'grad':graduated})
+
+    return df

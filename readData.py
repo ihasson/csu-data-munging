@@ -278,6 +278,35 @@ def read_College_MATH(fname='Encrypted-Math-Sequences.txt',dct={}):
             dct[st.sid] = st
     return dct
 
+## read the major information.
+# Currently do not know how to identify double major
+#  formatting as follows:
+#  studentid|term|major|term|major (variable number of fields)\n
+def read_majors(fname='data/majors.txt',dct={}):
+    print("read_majors")
+    #counter =100
+    f = open(fname,'r')
+    header = f.readline()
+    for l in f.readlines():
+        l=l.rstrip()
+        sid,sep,tm = l.partition('|')
+        tm = tm.split('|')
+        if not(sid in dct): 
+            dct[sid] = Student(sid)
+        st = dct[sid]
+        for k in range(int(len(tm)/2)):
+            i=2*k
+            st.majors.append([tm[i],tm[i+1]])
+            #if counter > 0:
+                #print(tm[i])
+                #print(tm[i+1])
+                #print("\n")
+            #    counter += -1
+        st.majors.sort()
+        st.majors.reverse()
+        st.last_major = st.majors[0][1]
+    return dct
+
 ## read the major data
 def read_Majors(filename='data/majors.txt',dct={},header=True):
     f = open(filename,'r')
@@ -286,9 +315,15 @@ def read_Majors(filename='data/majors.txt',dct={},header=True):
         sid,*tm = line.strip().split('|')
         if not(sid in dct):
             dct[sid] = Student(sid)
-        for i in range(len(tm)/2):
+        for i in range(int(len(tm)/2)): # something might be off here.
             dct[sid].majors.append((tm[i+0],tm[i+1]))
-    # add some logic to fill last_major,first_major,current_major etc...
+        firstMajor = 9999
+        lastMajor = 0000
+        for m in dct[sid].majors:
+            if int(m[0]) > lastMajor:
+                dct[sid].last_major = m[1]
+            if int(m[1]) < firstMajor:
+                dct[sid].first_major = m[1]
     return dct
 
 
@@ -304,6 +339,7 @@ def read_Progress(filename='data/terms-codes-graddates.txt',dct={}):
         st.first_term = l[1]
         st.last_term = l[2]
         st.grad_term = l[3]
+    f.close()
     return dct
 
 ## need to change the names of the input variables to avoid confusion.
@@ -385,6 +421,7 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
             nc = Course(nam=c[0],sem=term,gra=c[2],un=c[1])
             dct[sid].cCourses.append(nc)
             dct[sid].add_to_ccDict(nc)
+    f.close()
     return dct
 
 ## a read all the data I have function
