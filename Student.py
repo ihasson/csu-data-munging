@@ -358,6 +358,16 @@ class HSCourse:
         if self.course_label in apparent_equivs:
             self.course_label = apparent_equivs[self.course_label]
 
+    def set_course_label_categorically(self,matchfun):
+        """ Sets course labels same as before but now with an additional
+            categorical labeling step
+        """
+        apparent_equivs = {'geometry' : 'geometry',
+                'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
+        self.course_label = matchfun(self.descr)
+        if self.course_label in apparent_equivs:
+            self.course_label = apparent_equivs[self.course_label]
+
 ## Returns a course name. Should not be used with course match.
     def getCourseName(self):
         if self.course_label != None:

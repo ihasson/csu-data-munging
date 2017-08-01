@@ -597,3 +597,16 @@ def partitionByGraduationYear(dataSet):
         else:
             outDCT[e.graduationYear()] = {k:e}
     return outDCT
+
+def partitionByHSMathCategory(dataSet,catMap=None):
+    """ Breaks up students categorically
+    """
+    if catMap == None:
+        catMap = {'calc':'Calculus',
+                    'precalc': 'Calculus Prep',
+                    'algebra2': 'Algebra 2',
+                    'none': 'None',
+                    'stats': 'Statistics',
+                    'adv_app_math': 'Remedial',
+                    'bad':'Other'}
+    return 'incomplete'
