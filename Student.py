@@ -21,7 +21,7 @@ class Student:
         self.sid = sid   # Must be base64 encoded and uniquely identifying.
         self.hsCourses = [] # each course has pattern [name,grade1,grade2]
         self.hsOldCNames = [] # Course names prior to labeling.
-        self.collegeSeq = [] # old list format
+        #self.collegeSeq = [] # old list format
         self.ccDict = {} # quick lookup dictionary of college courses
         #self.zipcode = None #Don't have this
         self.first_term = None

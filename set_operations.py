@@ -601,12 +601,16 @@ def partitionByGraduationYear(dataSet):
 def partitionByHSMathCategory(dataSet,catMap=None):
     """ Breaks up students categorically
     """
+    outDCT
     if catMap == None:
         catMap = {'calc':'Calculus',
-                    'precalc': 'Calculus Prep',
+                    'trigonometry' 'precalc' 'trig_and_precalc': 'Calculus Prep',
                     'algebra2': 'Algebra 2',
                     'none': 'None',
                     'stats': 'Statistics',
-                    'adv_app_math': 'Remedial',
-                    'bad':'Other'}
+                    'adv_app_math' 'adv_math' 'geometry': 'Remedial',
+                    'bad' : 'Other'}
+    for s,k in dataSet.items():
+        catMap[
+
     return 'incomplete'
