@@ -1,5 +1,6 @@
 from set_operations import *
 import pickle
+import pandas as np
 
 DATASET = rd.load_data()
 

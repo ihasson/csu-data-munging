@@ -33,3 +33,11 @@ def buildFTFDataSet():
     print(num_no_course," students dropped for having no gpa")
     data = dataSet1
     return data
+
+def build_BIG_DataSet():
+    data = rd.readall()
+    mf = courseMatcher.construct_matchfun()
+    for k,s in data.items():
+        if len(s.hsCourses) > 0:
+            s.set_hs_course_labels(mf)
+    return data

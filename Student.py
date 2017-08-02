@@ -395,9 +395,9 @@ class HSCourse:
 class Course:
     def __init__(self,nam=None,sem=None,gra=None,un=None):
         self.name = nam
-        self.semester = sem
-        self.grade_letter = gra
-        self.units = float(un)
+        self.semester = sem # ???
+        self.grade_letter = gra # str
+        self.units = float(un) #??? 
         self.grade_val = None
         self.passed = 0
         self.repeat = gra == 'RP' # this course's grade got replaced

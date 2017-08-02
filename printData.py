@@ -46,7 +46,8 @@ def make_DCT(studentDCT,columnsDCT):
             if cN in stu.ccDict:
                 s = ''
                 for e in stu.ccDict[cN]:
-                    s+=e[0]+'|'+e[3]+'|'+e[2]+' '
+                    #s+=e[0]+'|'+e[3]+'|'+e[2]+' '
+                    s+=e.semester+'|'+e.grade_letter+'|'+str(e.units)+' '
                 matDct[sid][cN] = s
            # else:
            #     matDct[sid][cN] = None
@@ -78,11 +79,29 @@ def write_csv(matDct):
     return None
 
 def read_all_and_filter():
-    dataSet = rd.read_Progress(dct=rd.read_majors(dct=rd.read_courses()))
+    dataSet = rd.read_Progress(dct=rd.read_majors(dct=rd.read_College_Courses()))
     return took_courses(filterByMajor(dataSet))
 
-def make_csv():
+def make_csv_old():
     data = read_all_and_filter()
     matDct = make_DCT(data, find_courses(data))
     write_csv(matDct)
     return matDct
+
+def make_csv(
+            out_file="math-majors.csv",
+            course_file="data/courses-and-grades-by-term.txt",
+            majors_file="data/majors.txt",
+            major="Mathematics"
+            ):
+    """ Use this to make a csv file for the given major.
+    """
+    dataSet = rd.read_College_Courses(dct={},fname=course_file)
+    dataSet = rd.read_majors(dct=dataSet,fname=majors_file)
+    dataSet = took_courses(filterByMajor(dataSet,major))
+    matDct =  make_DCT(dataSet,find_courses(dataSet))
+    f = open(out_file,"w")
+    df = pd.DataFrame(matDct).transpose()
+    f.write(df.to_csv())
+    f.close()
+
