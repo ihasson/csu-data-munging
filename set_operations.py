@@ -1,7 +1,5 @@
 import readData as rd
 import Student
-#import pickle
-import pandas as pd
 import courseMatcher as cm
 import Label_Maps
 
@@ -57,16 +55,6 @@ def takeN(dct,num=100):
         lout.append(dct[l[i]])
     return lout
 
-def makeDf(data):
-    clmns = ['first_term','last_term','grad_term','lastHsCourse']
-    rowlist = []
-    for e in data:
-        lasthsc='placeholder' 
-        row = [data[e].first_term, data[e].last_term,data[e].grad_term,lasthsc]
-        rowlist.append(row)
-    df = pd.DataFrame(rowlist,columns=clmns) 
-    return df
-
 def make_traing_set(data):
     f = open("training2.txt",'w')
     lines = []
@@ -118,31 +106,6 @@ def read_and_match():
         dct[s].set_hs_course_labels(mfun)
     return dct
 
-## not sure what to name this it returns results about how courses were labeled
-def f(dct):
-    matched = {}
-    matchedLabel = {}
-    notMatched = {}
-    for st in dct:
-        for hsc in dct[st].hsCourses:
-            if hsc.course_label == 'unknown':
-                if hsc.descr in notMatched:
-                    notMatched[hsc.descr] += 1
-                else: 
-                    notMatched[hsc.descr] = 1
-            else: 
-                if hsc.course_label in matchedLabel:
-                    if hsc.descr in matchedLabel[hsc.course_label]:
-                        matchedLabel[hsc.course_label][hsc.descr] += 1
-                    else:
-                        matchedLabel[hsc.course_label][hsc.descr] = 1
-                else:
-                    matchedLabel[hsc.course_label] = {hsc.descr: 1}
-                if hsc.descr in matched:
-                    matched[hsc.descr] += 1
-                else: 
-                    matched[hsc.descr] = 1
-    return matched,notMatched,matchedLabel
 
 def tookCourse(dct,cname,label=False):
     outls = []
@@ -172,23 +135,6 @@ def took_algebra2_when(dct):
             g12.append(dct[s])
     return {'grade9':g9, 'grade10':g10, 'grade11':g11, 'grade12':g12}
 
-def dct_by_gradelvl_math(dct,gradelvl='12'):
-    outdct={'no_math':[]}
-    for s in dct:
-        no_g12_math = True
-        dupcatch={} # add course labels to this to prevent duplicate students 
-        for e in dct[s].hsCourses:
-            if e.hs_grade_level == gradelvl:
-                if not(e.course_label in  dupcatch):
-                    dupcatch[e.course_label] = True
-                    no_g12_math = False
-                    if e.course_label in outdct:
-                        outdct[e.course_label].append(dct[s])
-                    else:
-                        outdct[e.course_label] = [dct[s]]
-        if no_g12_math:
-            outdct['no_math'].append(dct[s])
-    return outdct
 
 ## 'patitions' dict by math course in particular grade.
 def partition_by_gradelvl_math(dct,gradelvl='12'):
@@ -209,59 +155,6 @@ def partition_by_gradelvl_math(dct,gradelvl='12'):
             outdct['no_math'][s] = dct[s]
     return outdct
 
-
-## Takes a dictionary of lists as input. Returns what the key implies in
-#   terms of passing or failing or failing the first math course.
-#   
-def compute_first_course_grades(dct):
-    pfg={}
-    for cat in dct:
-        p=cat+'_pass'
-        f=cat+'_fail'
-        pfg[p] = 0
-        pfg[f] = 0
-        for st in dct[cat]:
-            st.collegeSeq.sort()
-            if st.collegeSeq[0][3] in gradesMap: 
-                if gradesMap[st.collegeSeq[0][3]] >= 2.0:
-                    pfg[p] += 1
-                else: 
-                    pfg[f] += 1
-            else:
-                print("WARNING  " +st.collegeSeq[0][3]+ "  not a grade")
-                print(st.sid)
-            ratio=cat+'_fail_rate'
-            pfg[ratio] = (pfg[f]/(pfg[f]+pfg[p]))
-    return pfg
-
-##
-def droppedOut(dct):
-    outcomes={}
-    for cat in dct:
-        dropout=cat+'_dropout'
-        current=cat+'_current'
-        grad=cat+'_grad'
-        rate=cat+'_dropout_rate'
-        outcomes[dropout] = 0
-        outcomes[current] = 0
-        outcomes[grad] = 0
-        for st in dct[cat]:
-            grad_term = int(st.grad_term)
-            last_term = int(st.last_term)
-            current_term = 2167
-            #grad := gradterm != 9999
-            #inprogress := gradterm == 9999 and current - last term < 10
-            #drop out otherwise
-            if grad_term != 9999:
-                outcomes[grad] += 1
-            elif (current_term - last_term) < 10:
-                outcomes[current] += 1
-            else:
-                outcomes[dropout] += 1
-        outcomes[rate] = (outcomes[dropout] / 
-                (outcomes[dropout]+outcomes[current]+outcomes[grad]))
-        outcomes[cat+'_total'] = len(dct[cat])
-    return outcomes
 
 ## returns a dictionary with start years as keys and val consisting of a LIST
 #  of the students who started that year.
@@ -480,11 +373,16 @@ def intersection(a,b):
 #    s = courseMatcher.findClosest(s,maxDist=4,listOfNames=courselist)
 #    return dictionary[s]
 
-
-#already deduplicates
+##Is intended to be given all student info in the form of a list of Student 
+#objects. 
+#Returns a dictionary of highschool course dictionaries each containing the
+#students reported to have taken the class in their last year of highschool.
+#
 def get_dict_by_courses(allstudent_info):
     info = {}
+    info['total'] = {}
     for a_student in allstudent_info:
+        info['total'][a_student.sid] = a_student
         for course in a_student.hsCourses:
             cname = course[0]
             if cname in info:
@@ -493,6 +391,7 @@ def get_dict_by_courses(allstudent_info):
                 info[cname] = {}
                 info[cname][a_student.sid] = a_student
     return info
+
 
 def dict_to_list(d):
     ls = []
@@ -513,24 +412,6 @@ def took_course(name,st_data_arr):
         count += took
     return students
 
-##Is intended to be given all student info in the form of a list of Student 
-#objects. 
-#Returns a dictionary of highschool course dictionaries each containing the
-#students reported to have taken the class in their last year of highschool.
-#
-def get_dict_by_courses(allstudent_info):
-    info = {}
-    info['total'] = {}
-    for a_student in allstudent_info:
-        info['total'][a_student.sid] = a_student
-        for course in a_student.hsCourses:
-            cname = course[0]
-            if cname in info:
-                info[cname][a_student.sid]= a_student
-            else: 
-                info[cname] = {}
-                info[cname][a_student.sid] = a_student
-    return info
 
 #need to rename
 #currently only gives how many people took each course.

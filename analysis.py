@@ -170,3 +170,93 @@ def graduationRates2(dataSet):
     df = pd.DataFrame({'4ygrad':fourYear,'6ygrad':sixYear,'grad':graduated})
 
     return df
+
+##
+def droppedOut(dct):
+    outcomes={}
+    for cat in dct:
+        dropout=cat+'_dropout'
+        current=cat+'_current'
+        grad=cat+'_grad'
+        rate=cat+'_dropout_rate'
+        outcomes[dropout] = 0
+        outcomes[current] = 0
+        outcomes[grad] = 0
+        for st in dct[cat]:
+            grad_term = int(st.grad_term)
+            last_term = int(st.last_term)
+            current_term = 2167
+            #grad := gradterm != 9999
+            #inprogress := gradterm == 9999 and current - last term < 10
+            #drop out otherwise
+            if grad_term != 9999:
+                outcomes[grad] += 1
+            elif (current_term - last_term) < 10:
+                outcomes[current] += 1
+            else:
+                outcomes[dropout] += 1
+        outcomes[rate] = (outcomes[dropout] / 
+                (outcomes[dropout]+outcomes[current]+outcomes[grad]))
+        outcomes[cat+'_total'] = len(dct[cat])
+    return outcomes
+
+
+## Takes a dictionary of lists as input. Returns what the key implies in
+#   terms of passing or failing or failing the first math course.
+#   
+def compute_first_course_grades(dct):
+    pfg={}
+    for cat in dct:
+        p=cat+'_pass'
+        f=cat+'_fail'
+        pfg[p] = 0
+        pfg[f] = 0
+        for st in dct[cat]:
+            st.collegeSeq.sort()
+            if st.collegeSeq[0][3] in gradesMap: 
+                if gradesMap[st.collegeSeq[0][3]] >= 2.0:
+                    pfg[p] += 1
+                else: 
+                    pfg[f] += 1
+            else:
+                print("WARNING  " +st.collegeSeq[0][3]+ "  not a grade")
+                print(st.sid)
+            ratio=cat+'_fail_rate'
+            pfg[ratio] = (pfg[f]/(pfg[f]+pfg[p]))
+    return pfg
+
+## not sure what to name this it returns results about how courses were labeled
+def f(dct):
+    matched = {}
+    matchedLabel = {}
+    notMatched = {}
+    for st in dct:
+        for hsc in dct[st].hsCourses:
+            if hsc.course_label == 'unknown':
+                if hsc.descr in notMatched:
+                    notMatched[hsc.descr] += 1
+                else: 
+                    notMatched[hsc.descr] = 1
+            else: 
+                if hsc.course_label in matchedLabel:
+                    if hsc.descr in matchedLabel[hsc.course_label]:
+                        matchedLabel[hsc.course_label][hsc.descr] += 1
+                    else:
+                        matchedLabel[hsc.course_label][hsc.descr] = 1
+                else:
+                    matchedLabel[hsc.course_label] = {hsc.descr: 1}
+                if hsc.descr in matched:
+                    matched[hsc.descr] += 1
+                else: 
+                    matched[hsc.descr] = 1
+    return matched,notMatched,matchedLabel
+
+def makeDf(data):
+    clmns = ['first_term','last_term','grad_term','lastHsCourse']
+    rowlist = []
+    for e in data:
+        lasthsc='placeholder' 
+        row = [data[e].first_term, data[e].last_term,data[e].grad_term,lasthsc]
+        rowlist.append(row)
+    df = pd.DataFrame(rowlist,columns=clmns) 
+    return df
