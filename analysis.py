@@ -140,6 +140,24 @@ def varDct(dataSet):
 #def rho()
 
 ## 4-year,6-year,all-time, graduation rates
+def graduationRates1(dataSet):
+    """By Cohort year
+    """
+    data = and_filter(dataSet,[lambda x: x.hasGraduated()])
+    fourYear = startYear(
+            and_filter(data,[lambda x: x.fourYearGrad()]))
+    fourYear = mapOverDct(fourYear,len)
+    sixYear = startYear(
+            and_filter(data,[lambda x: x.sixYearGrad()]))
+    sixYear = mapOverDct(sixYear,len)
+    graduated = mapOverDct(startYear(data),len)
+    everyone = mapOverDct(startYear(dataSet),len)
+    df = pd.DataFrame({'4ygrad':fourYear,'6ygrad':sixYear,'grad':graduated,
+        'cohort size':everyone})
+
+    return df
+
+## 4-year,6-year,all-time, graduation rates
 def graduationRates2(dataSet):
     data = and_filter(dataSet,[lambda x: x.hasGraduated()])
     fourYear = partitionByGraduationYear(
@@ -148,7 +166,7 @@ def graduationRates2(dataSet):
     sixYear = partitionByGraduationYear(
             and_filter(data,[lambda x: x.sixYearGrad()]))
     sixYear = mapOverDct(sixYear,len)
-    graduated = mapOverDct(partitionByGraduationYear(data),len)
+    graduated = mapOverDct(partitionByGraduationYear(data),len) 
     df = pd.DataFrame({'4ygrad':fourYear,'6ygrad':sixYear,'grad':graduated})
 
     return df

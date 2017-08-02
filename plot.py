@@ -11,6 +11,7 @@ def plotGradRates():
     pl.title('Graduation Rates by First Time Freshman Cohorts')
     pl.show()
 
+### need to redo this one
 def plotHSMathGradRates():
     ''' break up the data set 
     '''
@@ -36,8 +37,11 @@ def plotHSMathGradRates():
             df['4y grad rate'] = 100*df['4y_grad']/df['total']
             df['6y grad rate'] = 100*df['6y_grad']/df['total']
             df['grad rate'] = 100*df['grad']/df['total']
+            df['4y grad rate'].plot(label=k,kind='line')
             dfDCT[k]=df.transpose()
-
+    pl.legend()
+    pl.ylim(0,100)
+    pl.show()
     return dfDCT
 
 def problemWithData():
@@ -52,7 +56,21 @@ def problemWithData():
     plt.xticks(range(2005,2017))
     plt.show()
 
-def timeToGraduateOfGraduates():
-    graduates = and_filter(DATASET,[lambda x: x.hasGradurated()])
-    return None
+def timeToGraduateOfGraduates(data=DATASET):
+    #graduates = and_filter(data,[lambda x: x.hasGraduated()])
+    d1 = partitionByHSMathCategory(data) 
+    d2 = mapOverDct(d1,graduationRates1)
+   # pl.xticks(range(0,11)) # for some reason this is necessary
+                           # probably because matplotlib is dumb 
+    for k,v in d2.items():
+        v['6ygradrate'] = 100*v['6ygrad']/v['cohort size']
+        v['4ygradrate'] = 100*v['4ygrad']/v['cohort size']
+        v['4ygradrate'].plot(label=k,kind='line')
+
+    pl.legend()
+    pl.title("percent of grads who finished in 4 years")
+    pl.ylim(0,100)
+    pl.show()
+    return d2
+
 

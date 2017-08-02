@@ -1,8 +1,9 @@
 import readData as rd
 import Student
-import pickle
+#import pickle
 import pandas as pd
 import courseMatcher as cm
+import Label_Maps
 
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
@@ -598,19 +599,25 @@ def partitionByGraduationYear(dataSet):
             outDCT[e.graduationYear()] = {k:e}
     return outDCT
 
-def partitionByHSMathCategory(dataSet,catMap=None):
+def partitionByHSMathCategory(dataSet,catMap=None,gradelvl='12'):
     """ Breaks up students categorically
     """
-    outDCT
+    outDCT = {'No Math':{}}
     if catMap == None:
-        catMap = {'calc':'Calculus',
-                    'trigonometry' 'precalc' 'trig_and_precalc': 'Calculus Prep',
-                    'algebra2': 'Algebra 2',
-                    'none': 'None',
-                    'stats': 'Statistics',
-                    'adv_app_math' 'adv_math' 'geometry': 'Remedial',
-                    'bad' : 'Other'}
-    for s,k in dataSet.items():
-        catMap[
+        catMap = Label_Maps.Label_Maps.hs_label_categ
+    try:
+        for k,s in dataSet.items():
+            tookgrade12Math = False
+            for c in s.hsCourses:
+                if c.hs_grade_level == gradelvl:
+                    tookgrade12Math = True
+                    cat = catMap[c.course_label]
+                    if not(cat in outDCT):
+                        outDCT[cat] = {}
+                    outDCT[cat][k]=s
+            if not(tookgrade12Math):
+                outDCT['No Math'][k] = s
+    except:
+        print(k)
+    return outDCT
 
-    return 'incomplete'

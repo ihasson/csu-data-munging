@@ -249,6 +249,11 @@ class Student:
                 self.units_total(),
                 self.gpa_raw()]
 
+    def showHSCourses(self):
+        """show hs course info"""
+        for e in self.hsCourses:
+            e.showall()
+
 ## show college course info
     def show_collegeSeq(self):
         print(self.collegeSeq)
@@ -347,7 +352,7 @@ class HSCourse:
                self.course_label] 
 
     def showAll(self):
-        print(str(self.descr))
+        print(str(self.descr),str(self.hs_grade_level))
 
 ## Sets the course_label using the passed in function
 #
@@ -358,15 +363,15 @@ class HSCourse:
         if self.course_label in apparent_equivs:
             self.course_label = apparent_equivs[self.course_label]
 
-    def set_course_label_categorically(self,matchfun):
-        """ Sets course labels same as before but now with an additional
-            categorical labeling step
-        """
-        apparent_equivs = {'geometry' : 'geometry',
-                'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
-        self.course_label = matchfun(self.descr)
-        if self.course_label in apparent_equivs:
-            self.course_label = apparent_equivs[self.course_label]
+#    def set_course_label_categorically(self,matchfun):
+#        """ Sets course labels same as before but now with an additional
+#            categorical labeling step
+#        """
+#        apparent_equivs = {'geometry' : 'geometry',
+#                'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
+#        self.course_label = matchfun(self.descr)
+#        if self.course_label in apparent_equivs:
+#            self.course_label = apparent_equivs[self.course_label]
 
 ## Returns a course name. Should not be used with course match.
     def getCourseName(self):
