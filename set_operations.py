@@ -355,16 +355,6 @@ def countStudents(allstudents,l):
         n += len(everyoneThatTookHS(allstudents, e))
     return n
 
-#this implementation is dumb. Need to replace with dictionary based one later.
-#A static method for finding the intersection of two student lists.
-def intersection(a,b):
-    c = []
-    for x in a:
-        for y in b:
-            if x.sid == y.sid :
-                c.append(y)
-    return c
-
     
 # can't remember what this is for
 #def relabel_func(string ,dictionary=hsClassesDict):

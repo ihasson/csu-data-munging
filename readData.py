@@ -393,7 +393,7 @@ def read_Math_SAT(fname='data/sat-data.txt',dct={},header=True):
         sid,score = line.split('|')
         if not(sid in dct):
             dct[sid] = Student(sid)
-        dct[sid].sat_math
+        dct[sid].sat_math = int(score)
     return dct
 
 def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
@@ -427,12 +427,12 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
 ## a read all the data I have function
 def readall():
     data = {}
-    data = rd.read_Large_HS(dictionary=data)
-    rd.read_College_Courses(dct=data)
-    #data = rd.read_College_Seq(dct=data # possibly need to reenable this.)
-    data = rd.read_Progress(dct=data)
-    data = rd.read_Cohorts(dct=data)
-    data = rd.read_MATH_SAT(dct=data)
+    data = read_Large_HS(dictionary=data)
+    read_College_Courses(dct=data)
+    #data = read_College_Seq(dct=data # possibly need to reenable this.)
+    data = read_Progress(dct=data)
+    data = read_Cohorts(dct=data)
+    data = read_Math_SAT(dct=data)
     #for e in data:                     #and this
     #    data[e].oldCourseInfoToNew()
     return data
