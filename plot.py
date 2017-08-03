@@ -52,11 +52,29 @@ def problemWithData():
     ds = ds.drop('9999')
     ds = ds.drop('2004')
     plt.plot(ds)
+    plt.title('Number of Graduating Students By Year')
     plt.legend('lower left')
     plt.xticks(range(2005,2017))
     plt.show()
 
 def timeToGraduateOfGraduates(data=DATASET):
+    graduates = and_filter(data,[lambda x: x.hasGraduated()])
+    d1 = partitionByHSMathCategory(data) 
+    d2 = mapOverDct(d1,graduationRates2)
+   # pl.xticks(range(0,11)) # for some reason this is necessary
+                           # probably because matplotlib is dumb 
+    for k,v in d2.items():
+        v['6ygradrate'] = 100*v['6ygrad']/v['grad']
+        v['4ygradrate'] = 100*v['4ygrad']/v['grad']
+        v['4ygradrate'].plot(label=k,kind='line')
+
+    pl.legend()
+    pl.title("percent of grads who finished in 4 years")
+    pl.ylim(0,100)
+    pl.show()
+    return d2
+
+def timeToGraduateOfCohorts(data=DATASET):
     #graduates = and_filter(data,[lambda x: x.hasGraduated()])
     d1 = partitionByHSMathCategory(data) 
     d2 = mapOverDct(d1,graduationRates1)
@@ -68,9 +86,10 @@ def timeToGraduateOfGraduates(data=DATASET):
         v['4ygradrate'].plot(label=k,kind='line')
 
     pl.legend()
-    pl.title("percent of grads who finished in 4 years")
+    pl.title("percent of cohort who finished in 4 years")
     pl.ylim(0,100)
     pl.show()
     return d2
 
+#def mathMajorSankey():
 

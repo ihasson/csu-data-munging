@@ -1,9 +1,10 @@
 import Student
 import readData as rd
-import analysis as an
+#import analysis as an
 import pandas as pd
-import numpy as np
-
+#import numpy as np
+# I merged everything from here into printData.py so you guys can just ignore
+# this.
 
 #def add_student_to_transitMatrix(student,term1,term2,tt=term_transition):
 #    for cname1 in term1:
@@ -56,5 +57,30 @@ def transitionMat(dataSet):
         transit = transitions[transName]
         for stdnt,terms_courses in student_term_courses.items():
             transit = addToTM(terms_courses,tpre,tnext,transit)
-
     return transitions
+
+def transitionsList(transmat):
+    lines = []
+    transitions = []
+    for k1,vct in transmat.items():
+        for k2,val in vct.items():
+            transitions.append([val,k1,k2])
+    transitions.sort()
+    for e in transitions:
+        lines.append(e[1]+'['+str(e[0])+']_'+e[2]+'\n')
+    f = open('transitions.txt','w')
+    f.writelines(lines)
+    f.close()
+
+def merge10Terms(transmat):
+    mergedTrans = {}
+    for term,termTrans in transmat.items():
+        for start_course,to_courses in termTrans.items():
+            if not(start_course in mergedTrans):
+                mergedTrans[start_course] = {}
+            for end_course,num in to_courses.items():
+                if end_course in mergedTrans[start_course]:
+                    mergedTrans[start_course][end_course] += num
+                else: 
+                    mergedTrans[start_course][end_course] = num
+    return mergedTrans

@@ -1,15 +1,25 @@
 # a script to make start up more convenient
 import Student
 import readData as rd
-from readData import save, load_data
+#from readData import save, load_data
 import courseMatcher
-import pandas as pd
+#import pandas as pd
 import set_operations as s_op
-import analysis as an
+#import analysis as an
+import pickle
+#import importlib
 
-import importlib
+def loadFTF():
+    """ Loads the first time freshmen data set.
+        Depends on the first time freshmen data set having already been built.
+    """
+    f = open("FTFpickle","rb")
+    data = pickle.load(f)
+    f.close()
+    return data
 
 def buildFTFDataSet():
+    """ a nice function to construct the FTF data set"""
     matchFun = courseMatcher.construct_matchfun()
     data = rd.read_Large_HS()
 
@@ -32,7 +42,11 @@ def buildFTFDataSet():
             dataSet1[key] = e
     print(num_no_course," students dropped for having no gpa")
     data = dataSet1
+    f = open("FTFpickle","wb")
+    pickle.dump(data,f)
+    f.close()
     return data
+
 
 def build_BIG_DataSet():
     data = rd.readall()

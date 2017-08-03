@@ -1,8 +1,8 @@
 from set_operations import *
-import pickle
-import pandas as np
-
-DATASET = rd.load_data()
+#import pickle
+import pandas as pd
+import load
+DATASET = load.loadFTF()
 
 def read_filter_match_FTF_ONLY():
     d = filter_has_hs_and_college(readall())
@@ -160,6 +160,7 @@ def graduationRates1(dataSet):
 
 ## 4-year,6-year,all-time, graduation rates
 def graduationRates2(dataSet):
+    """ by gad year """
     data = and_filter(dataSet,[lambda x: x.hasGraduated()])
     fourYear = partitionByGraduationYear(
             and_filter(data,[lambda x: x.fourYearGrad()]))
@@ -261,3 +262,17 @@ def makeDf(data):
         rowlist.append(row)
     df = pd.DataFrame(rowlist,columns=clmns) 
     return df
+
+def makecourseMatrix(dataSet):
+    matrixDct = {}
+    for k,s in dataSet.items():
+        matrixDct[k] = {}
+        for coursename in s.ccDict:
+            matrixDct[k][coursename] = s.has_passed(coursename)
+        if s.hasGraduated():
+            matrixDct[k]['grad'] = 1
+        else: 
+            matrixDct[k]['grad'] = 0
+        matrixDct[k]['last_term'] = int(s.last_term)
+    return np.DataFrame(matrixDct).fillna(0)
+

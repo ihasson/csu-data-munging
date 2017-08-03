@@ -63,8 +63,8 @@ class Student:
         for e in self.hsCourses:
             if e.hs_grade_level == '12':
                 out[e.course_label] = self.sid
-        if len(out) == 0: print('no course name?!?')
-          #  out = {'None':self.sid}
+        if len(out) == 0: #print('no course name?!?')
+            out['None'] = self.sid
         return out
 
 ## gets hs courses
@@ -231,7 +231,7 @@ class Student:
                 'term_count':self.number_of_terms(),
                 'units_total':self.units_total(),
                 'last_major':self.last_major,
-                'ruff_gpa': self.gpa_raw(),
+                'rough_gpa': self.gpa_raw(),
                 }
         for key,num in self.grade_counts().items():
             summary[key] = num
@@ -314,12 +314,14 @@ class Student:
         else:
             return '9999'
 
-
 ## Shows all available information about the student
     #def showall(self):
 
-
-
+    def has_passed(self,course_name):
+        if course_name in self.ccDict:
+            for c in self.ccDict[course_name]:
+                if c.passed == 1: return 1
+        return 0
 
 class HSCourse:
     def __init__(self):
