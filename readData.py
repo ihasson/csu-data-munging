@@ -305,25 +305,30 @@ def read_majors(fname='data/majors.txt',dct={}):
         st.majors.sort()
         st.majors.reverse()
         st.last_major = st.majors[0][1]
+        if st.last_major == None:
+            print("No Major!,   " + sid)
     return dct
 
 ## read the major data
 def read_Majors(filename='data/majors.txt',dct={},header=True):
+    
     f = open(filename,'r')
     if header: f.readline()
     for line in f.readlines():
         sid,*tm = line.strip().split('|')
         if not(sid in dct):
             dct[sid] = Student(sid)
-        for i in range(int(len(tm)/2)): # something might be off here.
+        for i in range(int(len(tm)/2)):
             dct[sid].majors.append((tm[i+0],tm[i+1]))
         firstMajor = 9999
         lastMajor = 0000
-        for m in dct[sid].majors:
-            if int(m[0]) > lastMajor:
-                dct[sid].last_major = m[1]
-            if int(m[1]) < firstMajor:
-                dct[sid].first_major = m[1]
+        try:
+            for m in dct[sid].majors:
+                if int(m[0]) > lastMajor:
+                    dct[sid].last_major = m[1]
+                if int(m[1]) < firstMajor:
+                    dct[sid].first_major = m[1]
+        except: print("second loop "+sid)
     return dct
 
 

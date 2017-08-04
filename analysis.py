@@ -276,3 +276,28 @@ def makecourseMatrix(dataSet):
         matrixDct[k]['last_term'] = int(s.last_term)
     return np.DataFrame(matrixDct).fillna(0)
 
+def lastHS_FirstMath(dataSet):
+    #lastMath = partitionBylastHSMath(dataSet)
+    lastMath = mapOverNestedDct(dataSet,lambda x: x.first_math(),2)
+    def something(indct):
+        outdct={}
+        for k,cname in indct.items():
+            if cname in outdct:
+                outdct[cname] += 1
+            else: 
+                outdct[cname] = 1
+        return outdct
+    return mapOverDct(lastMath,something)
+
+def lastHS_OtherThing(dataSet,fn=lambda x: x.first_math()):
+    #lastMath = partitionBylastHSMath(dataSet)
+    lastMath = mapOverNestedDct(dataSet,fn,2)
+    def something(indct):
+        outdct={}
+        for k,cname in indct.items():
+            if cname in outdct:
+                outdct[cname] += 1
+            else: 
+                outdct[cname] = 1
+        return outdct
+    return mapOverDct(lastMath,something)

@@ -272,7 +272,7 @@ def partitionByCohortYear(dataSet,allowed_cohort_type=lambda x: True):
 
 ## returns dict partitioned by last HS course(s)
 def partitionBylastHSMath(dct):
-    return mapOverDct(dct_by_gradelvl_math(dct),stlstToDct)
+    return partition_by_gradelvl_math(dct)
 
 ## depth must be an integer >= 1
 def mapOverNestedDct(dictionary,function,depth):

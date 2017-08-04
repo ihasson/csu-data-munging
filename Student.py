@@ -297,14 +297,24 @@ class Student:
 
 ## math course student took at csun returns first course the student took
 #
+#    def first_math(self):
+#        earliest = self.collegeSeq[0]
+#        for e in self.collegeSeq:
+#            if e[0].isnumeric():
+#                if int(earliest[0]) > int(e[0]):
+#                    earliest = e
+#            else: print("error in Student.first_math()" + str(earliest[0]) )
+#        return earliest
     def first_math(self):
-        earliest = self.collegeSeq[0]
-        for e in self.collegeSeq:
-            if e[0].isnumeric():
-                if int(earliest[0]) > int(e[0]):
-                    earliest = e
-            else: print("error in Student.first_math()" + str(earliest[0]) )
-        return earliest
+        try:
+            mathCourses = []
+            for course in self.cCourses:
+                if ('MATH' in course.name) or ('ESM' in course.name):
+                    mathCourses.append([int(course.semester),course.name])
+            mathCourses.sort()
+            return mathCourses[0][1]
+        except:
+            return 'NONE'
 
 ## graduation year without term
     def graduationYear(self):
