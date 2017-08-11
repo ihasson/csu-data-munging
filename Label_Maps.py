@@ -22,7 +22,7 @@ class Label_Maps:
         'finite_math': 'Other',
         'geo_alg_trig': 'Remedial',
         'geo_trig': 'Remedial',
-        'geometry': 'Remedial',
+        'geometry': 'Geometry',
         'int_math_1': 'Other',
         'int_math_2': 'Other',
         'int_math_3': 'Other',

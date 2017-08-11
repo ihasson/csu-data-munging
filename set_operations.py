@@ -233,15 +233,15 @@ def mapOverDct(dct,fn):
         dctout[e] = fn(dct[e])
     return dctout
 
-## 
-def foldOverDct(dct,fn):
-    ls = list(dct)
-    def foldover(l,d,f):
-        if len(l)==1:
-            return d[l.pop()]
-        else:
-            return f(d[l.pop()],foldover(l,d,f))
-    return foldover(ls,dct,fn)
+#doesn't seem to work will remove soon
+#def foldOverDct(dct,fn):
+#    ls = list(dct)
+#    def foldover(l,d,f):
+#        if len(l)==1:
+#            return d[l.pop()]
+#        else:
+#            return f(d[l.pop()],foldover(l,d,f))
+#    return foldover(ls,dct,fn)
 
 ## converts a list of students to a dictionary
 def stlstToDct(ls):
@@ -492,3 +492,22 @@ def partitionByHSMathCategory(dataSet,catMap=None,gradelvl='12'):
         print(k)
     return outDCT
 
+# Need to test this function at some point.
+def partitionStudents(dataSet,fn= lambda x: 'all'):
+    """ Takes function that returns a string 
+        and uses it to partition the data set into subdictionaries.
+    """
+    outDCT = {}
+    for k,s in dataSet.items():
+        if not(fn(s) in outDCT): outDCT[fn(s)] = {}
+        outDCT[fn(s)][k] = s
+    return  outDCT
+
+def matrixTranspose(m_in):
+    m_out = []
+    for i in range(len(m_in)):
+        for j in range(len(m_in[i])):
+            if j >= len(m_out): m_out.append([])
+            m_out[j].append(m_in[i][j])
+    return m_out
+    

@@ -93,3 +93,53 @@ def timeToGraduateOfCohorts(data=DATASET):
 
 #def mathMajorSankey():
 
+def plotSAT(data=DATASET,title='None'):
+    satDct = mapOverNestedDct(satanal2(data),len,2)
+    #plot = plt.Subplot()
+    for cat,d in satDct.items():
+        l = []
+        for score,popul in d.items():
+            l.append([int(score),popul])
+        l.sort()
+        x = []
+        y = []
+        for e in l:
+            x.append(e[0])
+            y.append(e[1])
+        plt.step(x,y,label=cat)
+    plt.legend()
+    plt.title('grade12 math')
+    plt.show()
+
+# need to rethink this one.
+def plotSATG11(data=DATASET):
+    satDct1 = mapOverNestedDct(satanal3(data),len,2)
+    #plot = plt.Subplot()
+    satGradDct = and_filter(data,[lambda x: x.hasGraduated()])
+    for cat,d in satDct1.items():
+        l = []
+        for score,popul in d.items():
+            l.append([int(score),popul])
+        l.sort()
+        x = []
+        y = []
+        for e in l:
+            x.append(e[0])
+            y.append(e[1])
+        plt.step(x,y,label=cat)
+    
+    plt.legend()
+    plt.title('grade11 Math')
+    plt.show()
+
+def plotSATDct(dct,title='sat',show=True):
+    for cat,d in dct.items():
+        l = []
+        for score,pop in d.items():
+            l.append([int(score),pop])
+        l.sort()
+        xy = matrixTranspose(l)
+        plt.plot(xy[0],xy[1],label=cat)
+    plt.legend()
+    plt.title=(title)
+    if show: plt.show()

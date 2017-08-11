@@ -301,3 +301,80 @@ def lastHS_OtherThing(dataSet,fn=lambda x: x.first_math()):
                 outdct[cname] = 1
         return outdct
     return mapOverDct(lastMath,something)
+
+#def Math_SAT_ANAL(dataSet):
+#    tookSat = and_filter(dataSet,[lambda x: x.sat_math != None])
+#    avgMathByCat = {}
+#    byCat = partitionByHSMathCategory(dataSet)
+#    satByCat = mapOverNestedDct(byCat,lambda x: x.sat_math,2)
+#    avgMathByCat['all'] = mapOverDct(satByCat,lambda x: sum(x.values())/len(x))
+#    grad_only = and_filter(tookSat,[lambda x: x.hasGraduated()])
+#    no_grad = and_filter(tookSat,[lambda x: not(x.hasGraduated())])
+#    byCat_grad_only = partitionByHSMathCategory(grad_only)
+#    byCat_no_grad = partitionByHSMathCategory(no_grad)
+#    sat_grad= mapOverNestedDct(byCat_grad_only,lambda x: x.sat_math,2)
+#    sat_no_grad =mapOverNestedDct(byCat_grad_only,lambda x: x.sat_math,2)
+#    avgMathByCat['grad'] = mapOverDct(sat_grad,lambda x: sum(x.values())/len(x),2)
+#    avgMathByCat['non grad'] = mapOverDct(sat_no_grad,lambda x: sum(x.values())/len(x),2)
+#    return avgMathByCat
+#
+def mathsatanal(dataset):
+    tookSat = and_filter(
+            DATASET,
+            [lambda x: x.sat_math != None])
+
+    mapOverDct(
+            mapOverNestedDct(
+                partitionByHSMathCategory(tookSat),
+                lambda x: x.sat_math,2),
+            lambda y: sum(y.values())/len(y))
+
+def satanal2(dataset):
+    tookSat = and_filter(dataset, [lambda x: x.sat_math != None,
+        lambda x: int.__mod__(x.sat_math,10) == 0])
+    fun = lambda x: partitionStudents(x,lambda x: str(x.sat_math))
+    a = mapOverNestedDct(partitionByHSMathCategory(tookSat),fun,1)
+    return a
+
+
+def satanal3(dataset):
+    tookSat = and_filter(dataset, [lambda x: x.sat_math != None,
+        lambda x: int.__mod__(x.sat_math,10) == 0])
+    fun = lambda x: partitionStudents(x,lambda x: str(x.sat_math))
+    a = mapOverNestedDct(partitionByHSMathCategory(tookSat,gradelvl='11'),fun,1)
+    return a
+
+def satGradRate(dataset):
+    tookSat = and_filter(dataset, [lambda x: x.sat_math != None,
+        lambda x: int.__mod__(x.sat_math,10) == 0])
+    def grad(y): 
+        if y.hasGraduated():
+            return "T"
+        else:
+            return "F"
+    fun = lambda x: partitionStudents(x,
+            lambda y: grad(y) )
+    a = mapOverDct(partitionStudents(tookSat,lambda x: str(x.sat_math)),fun)
+    b = mapOverNestedDct(a,len,2)
+    def ratio(y):
+        if 'T' in y:
+            if 'F' in y:
+                return y['T']/(y['T']+y['F'])
+            else: return 1.0
+        else:
+            if 'F' in y:
+                return 0.0
+            else:
+                return -1.0
+
+    return mapOverDct(b,ratio)
+
+def satanal4(dataset):
+    tookSat = and_filter(dataset, [lambda x: x.sat_math != None,
+        lambda x: int.__mod__(x.sat_math,10) == 0])
+    d1 = partitionByHSMathCategory(tookSat)
+    def satandgrad(stdnt):
+        g = -1
+        if stdnt.hasGraduated(): g = 1
+        return {'sat': stdnt.sat_math, 'grad': g}
+    return mapOverDct(d1,lambda x: mapOverDct(x,satandgrad))
