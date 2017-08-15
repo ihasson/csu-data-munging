@@ -429,6 +429,31 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
     f.close()
     return dct
 
+def readAllExams(fname='data/full-exams-database.txt',dct={},header=False):
+    """ reads the exam info """
+    duplicate_exams=0
+    tmpExamScores = {}
+    f = open(fname,'r')
+    if header: f.readline
+    for line in f.readlines():
+        sid,test,subTest,score,date = line.strip().split('|')
+        if not(sid in tmpExamScores): tmpExamScores[sid] = {}
+        if not(test in tmpExamScores[sid]): 
+            tmpExamScores[sid][test] = {}
+        if not(date in tmpExamScores[sid][test]):
+            tmpExamScores[sid][test][date] = {}
+        if subTest in tmpExamScores[sid][test][date]:
+            #print("Warning duplicate tests!")
+            duplicate_exams += 1
+            print(sid)
+        else: 
+            tmpExamScores[sid][test][date][subTest] = score
+    for sid in tmpExamScores:
+        if not(sid in dct): dct[sid] = Student(sid)
+        dct[sid].setExams(tmpExamScores[sid])
+    print(duplicate_exams)
+    return dct
+
 ## a read all the data I have function
 def readall():
     data = {}
@@ -437,10 +462,12 @@ def readall():
     #data = read_College_Seq(dct=data # possibly need to reenable this.)
     data = read_Progress(dct=data)
     data = read_Cohorts(dct=data)
-    data = read_Math_SAT(dct=data)
+    data = read_Math_SAT(dct=data) # this is so I can check data files.
+    data = readAllExams(dct=data)
     #for e in data:                     #and this
     #    data[e].oldCourseInfoToNew()
     return data
+
 
 ## convenient save function
 def save(dct):
