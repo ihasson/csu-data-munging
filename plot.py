@@ -91,12 +91,23 @@ def timeToGraduateOfCohorts(data=DATASET):
     pl.show()
     return d2
 
-#def mathMajorSankey():
-
-def plotSAT(data=DATASET,title='None'):
-    satDct = mapOverNestedDct(satanal2(data),len,2)
+##These two functions might do the same thing.
+##
+def plotSATDct(dct,title='sat',show=True):
+    for cat,d in dct.items():
+        l = []
+        for score,pop in d.items():
+            l.append([int(score),pop])
+        l.sort()
+        xy = matrixTranspose(l)
+        plt.plot(xy[0],xy[1],label=cat)
+    plt.legend()
+    plt.title=(title)
+    if show: plt.show()
+def plotSAT(data ,title='None',step=False):
+    #satDct = mapOverNestedDct(satanal2(data),len,2)
     #plot = plt.Subplot()
-    for cat,d in satDct.items():
+    for cat,d in data.items():
         l = []
         for score,popul in d.items():
             l.append([int(score),popul])
@@ -106,14 +117,21 @@ def plotSAT(data=DATASET,title='None'):
         for e in l:
             x.append(e[0])
             y.append(e[1])
-        plt.step(x,y,label=cat)
+        if step:
+            plt.step(x,y,label=cat)
+        else: plt.plot(x,y,label=cat)
     plt.legend()
-    plt.title('grade12 math')
+    plt.title(title)
     plt.show()
+
+def plotSATG12(dataset=DATASET):
+    data = and_filter(dataset,[lambda x: x.hasSAT()])
+    satDct = mapOverNestedDct(G12Math_BestSATMath(data),len,2)
+    plotSAT(satDct,title='Best SAT Math vs Grade 12 Math')
 
 # need to rethink this one.
 def plotSATG11(data=DATASET):
-    satDct1 = mapOverNestedDct(satanal3(data),len,2)
+    satDct1 = mapOverNestedDct(G11Math_BestSATMath(data),len,2)
     #plot = plt.Subplot()
     satGradDct = and_filter(data,[lambda x: x.hasGraduated()])
     for cat,d in satDct1.items():
@@ -132,14 +150,3 @@ def plotSATG11(data=DATASET):
     plt.title('grade11 Math')
     plt.show()
 
-def plotSATDct(dct,title='sat',show=True):
-    for cat,d in dct.items():
-        l = []
-        for score,pop in d.items():
-            l.append([int(score),pop])
-        l.sort()
-        xy = matrixTranspose(l)
-        plt.plot(xy[0],xy[1],label=cat)
-    plt.legend()
-    plt.title=(title)
-    if show: plt.show()

@@ -1,18 +1,40 @@
+## @package Student
+# Defines the student object and some methods for getting usefull information
+# on a per student basis.
+#  
+#
+#    Copyright (C) 2017 Izzy Hasson <izzy.hasson.925@my.csun.edu>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+
+from Label_Maps import Label_Maps
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
-gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
-                'B+':3.3,'B':3.0,'B-':2.7,
-                'C+':2.3,'C':2.0,'C-':1.7, 
-                'D+':1.3,'D':1.0,'D-':0.7,
-                'F':0.0, 'W':0.0,'WU':0.0,   
-                'CR':2.0, 'NC':0.0, 'RP':0.94 # RP stands for repeat
-                #,'X1':?, 'X2':? # not enterred symbols on app-dat
-                }
-
-yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
-        '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
-        '214':'2014','215':'2015','216':'2016','217':'2017','203':'2003'}
-
+#gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
+#                'B+':3.3,'B':3.0,'B-':2.7,
+#                'C+':2.3,'C':2.0,'C-':1.7, 
+#                'D+':1.3,'D':1.0,'D-':0.7,
+#                'F':0.0, 'W':0.0,'WU':0.0,   
+#                'CR':2.0, 'NC':0.0, 'RP':0.94 # RP stands for repeat
+#                #,'X1':?, 'X2':? # not enterred symbols on app-dat
+#                }
+#
+#yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
+#        '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
+#        '214':'2014','215':'2015','216':'2016','217':'2017','203':'2003'}
+#
 ## class definition for student may want to create sub classes for
 # highschool application and 
 class Student:
@@ -67,10 +89,22 @@ class Student:
                     self.ccDict[e.name] = [e]
 ## grade12 math
     def grd12math(self):
+        """ by label """
         out = {}
         for e in self.hsCourses:
             if e.hs_grade_level == '12':
                 out[e.course_label] = self.sid
+        if len(out) == 0: #print('no course name?!?')
+            out['None'] = self.sid
+        return out
+
+    def grd12mathCateg(self):
+        """ by category """
+        out = {}
+        labelmap = Label_Maps.hs_label_categ
+        for e in self.hsCourses:
+            if e.hs_grade_level == '12':
+                out[labelmap[e.course_label]] = self.sid
         if len(out) == 0: #print('no course name?!?')
             out['None'] = self.sid
         return out
@@ -207,6 +241,7 @@ class Student:
         return units
 
 ## grade-counts
+# need a better description
     def grade_counts(self):
         grades = {}
         for e in self.cCourses:
@@ -341,15 +376,44 @@ class Student:
                 if c.passed == 1: return 1
         return 0
 
+    def getScores(self,test='ELM'):
+        """ search exams_tree for scores for a given test"""
+        def getscores(treeDct,accum):
+            if type(treeDct) == dict:
+                for e in treeDct.values():
+                    getscores(e,accum)
+            else:
+                accum.append(treeDct)
+        def search(treeDct,test,accum):
+            if type(treeDct) == dict:
+                if test in treeDct:
+                    getscores(treeDct[test],accum)
+                else:
+                    for e in treeDct.values():
+                        search(e,test,accum)
+        
+        scores = []
+        search(self.exams_tree,test,scores)
+        return scores
+
     def hasExams(self):
         """ if student has any exams in the full exams database returns true.
         """
-        if len(self.exams_tree) > 0:
+        if self.exams_tree == None:
+            return False
+        elif len(self.exams_tree) > 0:
             return True
         else: 
             return False
 
-## Will need to change when exams scores is dealt with better
+    def hasSAT(self):
+        """ Returns True if the student has done the SAT
+        """
+        if self.hasExams():
+            if 'SAT' in self.exams_tree:
+                return True
+        return False
+
     def bestSATMath(self):
         """ Returns the best SAT math score regardless of whether the combined
             SAT is better or whether there was a better ACT.
@@ -358,17 +422,32 @@ class Student:
         best = -1
         if 'SAT' in self.exams_tree:
             for test_date,subtests in self.exams_tree['SAT'].items():
-                if int(subtests['Math']) > best:
-                    best = int(subtests['Math'])
+                if 'Math' in subtests:
+                    if int(subtests['Math']) > best:
+                        best = int(subtests['Math'])
+            return best
+        else: 
+            return None
+    def bestSATComposite(self):
+        best = 0
+        if self.hasSAT():
+            for test__date,subtests in self.exams_tree['SAT'].items():
+                if 'Math' in subtests and 'Verbal' in subtests:
+                    c = int(subtests['Math'])+int(subtests['Verbal'])
+                    if c > best:
+                        best = c
         return best
 
-    def hasSAT(self):
-        """ Returns True if the student has done the SAT
-        """
-        if len(self.exams_tree) > 0:
-            if len(self.exams_tree['SAT']) > 0:
+    def hasELM(self):
+        if self.hasExams():
+            if 'ELM' in self.exams_tree:
                 return True
         return False
+
+    def bestELM(self):
+        if self.hasELM():
+            return max(map(lambda x: int(x), self.getScores('ELM')))
+        else: return None
 
 class HSCourse:
     def __init__(self):

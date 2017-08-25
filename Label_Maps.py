@@ -26,7 +26,7 @@ class Label_Maps:
         'int_math_1': 'Other',
         'int_math_2': 'Other',
         'int_math_3': 'Other',
-        'inter_alg': 'Remedial',
+        'inter_alg': 'Algebra 2',
         'intr_prob_stat': 'Other',
         'math_anal': 'Calculus Prep',
         'no_math': 'NoMath',
@@ -38,7 +38,10 @@ class Label_Maps:
         'trig_and_precalc': 'Calculus Prep',
         'trigonometry': 'Calculus Prep',
         'unknown': 'Other'}
-    
+   
+    hs_label_categ_lst = ['Calculus Prep','Remedial','Other','Algebra 2',
+            'NoMath', 'Geometry', 'Calculus', 'Statistics']
+
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
     gradesMap = {'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values

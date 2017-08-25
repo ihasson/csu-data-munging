@@ -28,6 +28,7 @@ def buildFTFDataSet():
     data = rd.read_Math_SAT(dct=data)
     data = rd.read_Cohorts(dct=data)
     data = rd.read_majors(dct=data)
+    data = rd.read_Exams(dct=data)
     #filtering
     data = s_op.filter_has_hs_and_college(data)
     data = s_op.and_filter(data,[lambda x: x.cohort_type == 'FTF'])

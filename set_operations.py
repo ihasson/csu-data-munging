@@ -3,16 +3,10 @@ import Student
 import courseMatcher as cm
 import Label_Maps
 
-# Provides numeric values for grade strings.
-# Need to change scores for non-letter 
-gradesMap = {  'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values
-                'B+':3.3,'B':3.0,'B-':2.7,
-                'C+':2.3,'C':2.0,'C-':1.7, 
-                'D+':1.3,'D':1.0,'D-':0.7,
-                'F':0.0, 'W':0.0,'WU':0.0,   
-                'CR':2.0, 'NC':0.0, 'RP':1.0 # RP stands for repeat
-                #,'X1':?, 'X2':? # the grade not enterred symbols on app-dat
-                }
+##WARNING !!!: Partitioning here is NOT mathematical partitioning.
+#       The methods with partition in their names allow the same student 
+#       to be in multiple partitions. 
+#              I couldn't think of a better word to describe the operation.
 
 ## general filter for Student
 # takes a list of functions
@@ -227,11 +221,14 @@ def partitionByRetention(dct):
     return outdct
 
 ## assume the dictionary contains students.
-def mapOverDct(dct,fn):
+def mapOverDct_old(dct,fn):
     dctout = {}
     for e in dct:
         dctout[e] = fn(dct[e])
     return dctout
+
+def mapOverDct(dct,fn):
+    return {k:fn(v) for k,v in dct.items()}
 
 #doesn't seem to work will remove soon
 #def foldOverDct(dct,fn):
@@ -383,11 +380,15 @@ def get_dict_by_courses(allstudent_info):
     return info
 
 
-def dict_to_list(d):
+def dict_to_list_old(d):
     ls = []
     for k in d.keys():
         ls.append(d[k])
     return ls
+
+def dict_to_list(d):
+    return [v for k,v in d.items()]
+
 
 #can't remember if this has deduplication
 def took_course(name,st_data_arr):

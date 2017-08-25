@@ -429,7 +429,7 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
     f.close()
     return dct
 
-def readAllExams(fname='data/full-exams-database.txt',dct={},header=False):
+def read_Exams(fname='data/full-exams-database.txt',dct={},header=False):
     """ reads the exam info """
     duplicate_exams=0
     tmpExamScores = {}
@@ -451,7 +451,7 @@ def readAllExams(fname='data/full-exams-database.txt',dct={},header=False):
     for sid in tmpExamScores:
         if not(sid in dct): dct[sid] = Student(sid)
         dct[sid].setExams(tmpExamScores[sid])
-    print(duplicate_exams)
+    print("duplicate exams:     ",duplicate_exams)
     return dct
 
 ## a read all the data I have function
