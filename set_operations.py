@@ -49,6 +49,7 @@ def takeN(dct,num=100):
         lout.append(dct[l[i]])
     return lout
 
+# what does this do again?
 def make_traing_set(data):
     f = open("training2.txt",'w')
     lines = []
@@ -60,6 +61,7 @@ def make_traing_set(data):
     f.writelines(lines)
     f.close()
 
+## seems that this filters out students who have not taken highschool courses.
 def filter_High_School(studentDct={}):
     outDct={}
     for e in studentDct:
@@ -69,6 +71,10 @@ def filter_High_School(studentDct={}):
                 outDct[e]=studentDct[e] 
     return outDct
 
+# This seems to break up students by highschool but that is now a useless.
+# Not sure what the point of this was.
+# Either need to change the name to something including 'partition' or 
+# need to remove.
 def student_hs():
     stdata= filter_High_School(readall())
     students_hs ={}
@@ -78,6 +84,7 @@ def student_hs():
             studentSchools[h.High_School] = h.High_School
     return studentSchools
 
+# should be removed
 # result was neither student wound up matriculating.
 def find_harvard_students(sdct={}):
     harvard_students = {}
@@ -93,6 +100,7 @@ def set_hs_course_labels(sdct):
     for k,s in sdct.items() : s.set_hs_course_labels(mfun)
     return sdct
 
+# need to decide what to do with these now redundant functions calling readall()
 def read_and_match():
     dct = filter_has_hs_and_college(readall())
     mfun = cm.construct_matchfun()
@@ -100,8 +108,10 @@ def read_and_match():
         dct[s].set_hs_course_labels(mfun)
     return dct
 
-
-def tookCourse(dct,cname,label=False):
+# Seems to be a filter function. Should be filter_by_hsCourse or something like
+# that.
+# label= if true use ???? if false use ????.
+def tookCourse(dct,cname,label=False) -> "StudentDictionary":
     outls = []
     for e in dct:
         if dct[e].tookHSCourse(cname,label):
@@ -511,4 +521,32 @@ def matrixTranspose(m_in):
             if j >= len(m_out): m_out.append([])
             m_out[j].append(m_in[i][j])
     return m_out
-    
+
+#
+## these now all seem kind of pointless
+#
+
+# transforms studentdict into set.
+#def studentDict_to_Set(dct,keys=True):
+#    outset = set()
+#    for k,o in dct.items():
+#        if keys: outset.add(k)
+#        else: outset.add(o)
+#    return outset
+def studentDict_to_Set(dct,keys=True):
+    if keys: return set(dct.keys())
+    else: return set(dct.values())
+
+# obviously this requires some other iterable, dict, to pull the actual
+# objects from.
+def sidSet_to_dict(sids,dataDct): return {s : dataDct[s] for s in sids} 
+#    outdct = {}
+#    for k in sids:
+#        outdct[k] = dataDct[k]
+#    return outdct
+
+def stdntObjSet_to_dict(stdntSet): return {x.sid : x for x in stdntSet}
+#    outdct = {}
+#    for e in stdntSet:
+#        outdct[e.sid] = e
+#    return outdct
