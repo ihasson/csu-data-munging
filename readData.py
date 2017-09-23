@@ -403,6 +403,7 @@ def read_Math_SAT(fname='data/sat-data.txt',dct={},header=True):
 
 def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
         header=True):
+    #errlogs= open('errorlogs/courses_and_grades.txt','w')
     f = open(fname,'r')
     if header: f.readline
     def breakthrees(lst,accum=[]):
@@ -423,7 +424,7 @@ def read_College_Courses(fname='data/courses-and-grades-by-term.txt',dct={},
         courses,leftover = breakthrees(rest,[])
         if len(leftover) > 0: print(leftover)
         for c in courses:
-            nc = Course(nam=c[0],sem=term,gra=c[2],un=c[1])
+            nc = Course(nam=c[0],sem=term,gra=c[2],un=c[1],sid=sid)
             dct[sid].cCourses.append(nc)
             dct[sid].add_to_ccDict(nc)
     f.close()
@@ -463,7 +464,7 @@ def readall():
     data = read_Progress(dct=data)
     data = read_Cohorts(dct=data)
     data = read_Math_SAT(dct=data) # this is so I can check data files.
-    data = readAllExams(dct=data)
+    data = read_Exams(dct=data)
     #for e in data:                     #and this
     #    data[e].oldCourseInfoToNew()
     return data

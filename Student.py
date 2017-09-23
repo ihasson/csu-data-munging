@@ -287,7 +287,7 @@ class Student:
     def featureVector(self):
         return [self.cohort_term,
                 self.hasGraduated(),
-                self.last_major(),
+                self.last_major,
                 self.last_term,
                 self.units_total(),
                 self.gpa_raw()]
@@ -297,9 +297,10 @@ class Student:
         for e in self.hsCourses:
             e.showall()
 
+# needs to be replaced
 ## show college course info
-    def show_collegeSeq(self):
-        print(self.collegeSeq)
+#    def show_collegeSeq(self):
+#        print(self.collegeSeq)
 
 ## need to update Still?
 # show highschool course info
@@ -359,6 +360,17 @@ class Student:
         except:
             return 'NONE'
 
+    def first_math_course(self)->"returns a course object rather than name":
+        try:
+            mathCourses = []
+            for course in self.cCourses:
+                if ('MATH' in course.name) or ('ESM' in course.name):
+                    mathCourses.append([int(course.semester),course])
+            mathCourses.sort()
+            return mathCourses[0][1]
+        except:
+            return None  # need to handle this error better.
+
 ## graduation year without term
     def graduationYear(self):
         gy = str(int(self.grad_term).__floordiv__(10))
@@ -395,6 +407,42 @@ class Student:
         scores = []
         search(self.exams_tree,test,scores)
         return scores
+#Need to change the name of this function
+    # if len(test) == 0 then get scores
+    # if tree hits bottom and test not empty no test 
+    # if hd of test in dict get scores from test[hd] tail(test)
+    def getScores2(self,test=['SAT','ANY','Math']) -> "returns list of strings":
+        
+        def getscores(treeDct,accum):
+            if type(treeDct) == dict:
+                for e in treeDct.values():
+                    getscores(e,accum)
+            else:
+                accum.appendd(treeDct)
+            return accum
+
+        def search(treeDct,testnames,accum):
+            if len(testnames)==0: 
+                if type(treeDct) != dict:
+                    accum.append(treeDct)
+                else: #type(treeDct)==dict
+                    getscores(treeDct,accum)
+            else:
+                try:
+                    if testnames[0] == 'ANY':
+                        for t in treeDct.values():
+                            search(t,testnames[1:],accum)
+                    elif testnames[0] in treeDct:
+                        search(treeDct[testnames[0]],testnames[1:],accum)
+                    else:
+                        pass
+                except: print(self.sid)
+            return None
+    
+        acc = []
+        if self.exams_tree != None:
+            search(self.exams_tree,test,acc)
+        return acc
 
     def hasExams(self):
         """ if student has any exams in the full exams database returns true.
@@ -428,14 +476,39 @@ class Student:
             return best
         else: 
             return None
+
+    def getSATComposite(self) -> "list of (int,int)":
+        """ returns list of pairs of all of the student's SATs in the form
+            [[math1,verbal1],[math2,verbal2]...] or if no SAT composite
+            then [].
+        """
+        sats = []
+        if self.hasSAT():
+            for test_date,subtests in self.exams_tree['SAT'].items():
+                if 'Math' in subtests and 'Verbal' in subtests:
+                    sats.append([int(subtests['Math']),int(subtests['Verbal'])])
+        return sats
+
     def bestSATComposite(self):
-        best = 0
+        best = -1
         if self.hasSAT():
             for test__date,subtests in self.exams_tree['SAT'].items():
                 if 'Math' in subtests and 'Verbal' in subtests:
                     c = int(subtests['Math'])+int(subtests['Verbal'])
                     if c > best:
                         best = c
+        return best
+    
+    def bestSATCompositeWithACT(self):
+        """ Takes ACT scores and converts them to SAT before figuring out
+            which score is best.
+        """
+        best = self.bestSATComposite()
+        acts = self.getScores2(['ACT','ANY','Composite'])
+        sat_from_act = list(map(lambda x: Label_Maps.actTOsat[x],acts))
+        if len(sat_from_act) > 0:
+            best_satact = max(map(lambda x: int(x),sat_from_act))
+            if best_satact > best: best = best_satact
         return best
 
     def hasELM(self):
@@ -521,7 +594,8 @@ class HSCourse:
 
 ## College Course
 class Course:
-    def __init__(self,nam=None,sem=None,gra=None,un=None):
+    def __init__(self,nam=None,sem=None,gra=None,un=None,sid='None'):
+        gradesMap = Label_Maps.gradesMap 
         self.name = nam
         self.semester = sem # ???
         self.grade_letter = gra # str
@@ -533,8 +607,9 @@ class Course:
             self.grade_val = gradesMap[gra] 
             if gradesMap[gra] >= 2.0: self.passed = 1
         else:
+            print("problem in course info:", sid, nam, sem, gra, un)
             self.grade_val = 0.0
-            self.units = 0
+            #self.units = 0
 
     def featureVector(self):
         return [int(self.semester), self.name, self.units, self.grade_letter]
