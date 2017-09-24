@@ -443,6 +443,12 @@ class Student:
         if self.exams_tree != None:
             search(self.exams_tree,test,acc)
         return acc
+    
+    def getBestScore(self,test='MPT1'):
+        scores = list(map(lambda x: int(x), self.getScores(test)))
+        if len(scores) > 0:
+            return max(scores)
+        else: return None
 
     def hasExams(self):
         """ if student has any exams in the full exams database returns true.
@@ -497,7 +503,8 @@ class Student:
                     c = int(subtests['Math'])+int(subtests['Verbal'])
                     if c > best:
                         best = c
-        return best
+        if best == -1: return None
+        else: return best
     
     def bestSATCompositeWithACT(self):
         """ Takes ACT scores and converts them to SAT before figuring out
@@ -645,108 +652,3 @@ def colCourseToNum(cname):
     cnum = int(re.findall('[0-9]+',cname))
     return cnum
 
-#class Exams:
-#    def __init__(self,examsLST):
-#        placement_tests = {'ELM','MPT':'MATH', 'EPT','WPE':'LANGUAGE'}
-#        sat1 = []
-#        sat2 = []
-#        act =  []
-#        ap = []
-#        placement = []
-#        other = []
-#        for t in examsLST:
-#            if t['test'] == 'SAT': 
-#                sat1.append(t)
-#            elif t['test'] == 'SATII':
-#                sat2.append(t)
-#            elif t['test'] == 'ACT':
-#                act.append(t)
-#            elif t['test'] == 'AP':
-#                ap.append(t)
-#            elif t['test'] in placement_tests:
-#                placement.append(t)
-#            else:
-#                other.append(t)
-#        self.sat1= Exams.SAT1s(sat1)
-#        self.sat2=Exams.SAT2s(sat2)
-#        self.act=Exams.ACTs(act)
-#        self.ap=[Exams.AP_Exam(x) for x in ap]
-#        self.placement=[Exams.Placement_Tests(x) for x in placement]
-#        self.others = other
-#
-#    class SAT1:
-#        def __init__(self,examsLST):
-#            dates = {}
-#            for t in examsLST:
-#                if not(t['date'] in dates): dates[t['date']] = {}
-#                if t['subTest'] in dates[t['date']]: 
-#                    print('problem with data')
-#                    print('need to do something about sid')
-#                else:
-#                    dates[t['date']][t['subTest']] = t
-#            for day,test in dates.items():
-#                if len(test) == 2:
-#                    #something
-#                elif len(test) == 3:
-#                    # something
-#                elif len(test) == 5:
-#                    # something
-#                else:
-#                    # ERROR!
-#                
-#    class SAT2:
-#        pass
-#    class ACT:
-#        pass
-#    class AP_Exam:
-#        pass
-#    class Placement_Tests:
-#        pass
-#
-##### exam data ########## Actually might want to just get rid of this class.
-# Due to how complicated the data is need to have complex nesting of classes
-#    """ Full set of exams.
-#        Getter methods must give result based on best batch of scores e.g.
-#        SAT Math should come from best SAT Math/Reading pair etc.
-#    """   
-#self.exams={}
-#
-#    #def __init__(self,examsLST):
-#    def init_Exams(self,examsLST):
-#        """ each element of exams list must be of the form
-#            {'test':test,'subTest':subTest,'score':int(score),'date':date}
-#        """
-#        #Standardized exams
-#        satAdjusted = {}
-#        examdct={ 'SAT':{},
-#                'SATII':{},
-#                'ACT':{},
-#                'AP':{},
-#        #placement exams
-#                'ELM':{}, # Math
-#                'EPT':{}, # English
-#                'MPT':{}, # Math Placement Test; 2 parts
-#                'WPE':{}, #
-#        # just incase other tests
-#                'OTHER' :[] }
-#        print(examsLST)
-#        for e in examsLST:
-#            print(e['test'])
-#            if e['test'] in examdct:
-#                if e['date'] in examdct[e['test']]:
-#                    examdct[e['test']][e['date']].append(e)
-#                else:
-#                    examdct[e['test']][e['date']]=[e]
-#            else:
-#                examdct['OTHER'].append(e)
-#        for examdate in examdct['SAT']:
-#            if len(examdct[examdate]) == 2:
-#                #if examdct[examdate]['subTest']
-#        self.exams=examdct
-#
-#    def setExams(self,exams):
-#        try:
-#        self.exams = init_Exams(exams)
-#        except:
-#            print(self.sid)
-#            print(exams)

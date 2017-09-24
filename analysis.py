@@ -434,3 +434,48 @@ def sat_first_math(dataset):
         "SAT_math":{k:s.bestSATMath() for k,s in data.items()}
         }
     return d1
+def test_first_math(dataset):
+    data = and_filter(dataset,[lambda x: (x.hasSAT() and 
+                                (x.first_math_course() != None)),
+                                lambda x: x.hasELM()])
+    d1={
+        "first_math":{k:s.first_math() for k,s in data.items()},
+        "first_math_grade":
+            {k:s.first_math_course().grade_val for k,s in data.items()},
+        "grade_letter":
+            {k:s.first_math_course().grade_letter for k,s in data.items()},
+        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
+        "ELM":{k:s.bestELM() for k,s in data.items()}
+        #"SAT_CR":{k:s.best
+        }
+    return d1
+def noELM_first_math(dataset):
+    data = and_filter(dataset,[lambda x: (x.hasSAT() and 
+                                (x.first_math_course() != None)),
+                                lambda x: not(x.hasELM())])
+    d1={
+        "first_math":{k:s.first_math() for k,s in data.items()},
+        "first_math_grade":
+            {k:s.first_math_course().grade_val for k,s in data.items()},
+        "grade_letter":
+            {k:s.first_math_course().grade_letter for k,s in data.items()},
+        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
+        "ELM":{k:s.bestELM() for k,s in data.items()}
+        }
+    return d1
+def first_math(dataset):
+    data = and_filter(dataset,[lambda x: x.first_math_course() != None,
+        lambda x: x.hasExams()])
+    d1={
+        "first_math":{k:s.first_math() for k,s in data.items()},
+        "first_math_grade":
+            {k:s.first_math_course().grade_val for k,s in data.items()},
+        "grade_letter":
+            {k:s.first_math_course().grade_letter for k,s in data.items()},
+        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
+        "ELM":{k:s.bestELM() for k,s in data.items()},
+        "SAT_Composite":{k:s.bestSATComposite() for k,s in data.items()},
+        "MPT1":{k:s.getBestScore('MPT1') for k,s in data.items()},
+        "MPT2":{k:s.getBestScore('MPT2') for k,s in data.items()}
+        }
+    return d1
