@@ -7,14 +7,15 @@ class Label_Maps:
 #        'stats': 'Statistics',
 #        'adv_app_math' 'adv_math' 'geometry' 'adv_alg': 'Remedial',
 #        'bad''pre_alg''accounting' 'col_alg' : 'Other'}
-    hs_label_categ = {'accounting':'Other',
-        'adv_alg': 'Remedial',
+    hs_label_categ = {
+        'accounting':'Other',
+        'adv_alg': 'Algebra 2', #Is this algebra 2 or remedial?
         'adv_app_math': 'Remedial',
         'adv_math': 'Remedial',
         'alg_trig': 'Remedial',
         'algebra1': 'Other',
         'algebra2': 'Algebra 2',
-        'bad': 'Other' ,
+        'bad': 'Other',
         'calculus': 'Calculus',
         'col_alg': 'Other',
         'data_science': 'Other',
@@ -29,7 +30,7 @@ class Label_Maps:
         'inter_alg': 'Algebra 2',
         'intr_prob_stat': 'Other',
         'math_anal': 'Calculus Prep',
-        'no_math': 'NoMath',
+        'no_math': 'No Math',
         'not_sure': 'Other',
         'pre_alg': 'Other',
         'precalc': 'Calculus Prep',
@@ -37,10 +38,12 @@ class Label_Maps:
         'stats': 'Statistics',
         'trig_and_precalc': 'Calculus Prep',
         'trigonometry': 'Calculus Prep',
-        'unknown': 'Other'}
+        'unknown': 'Other',
+        'None': 'No Math'
+        }
    
     hs_label_categ_lst = ['Calculus Prep','Remedial','Other','Algebra 2',
-            'NoMath', 'Geometry', 'Calculus', 'Statistics']
+            'No Math', 'Geometry', 'Calculus', 'Statistics']
 
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
@@ -59,7 +62,8 @@ class Label_Maps:
 
     #SAT CR+M -> ACT Composite
     #on second though this is a shitty map.
-    satTOact={ '1600':'36',
+    satTOact={ 
+        '1600':'36',
         '1560':'35',
         '1510':'34',
         '1460':'33',

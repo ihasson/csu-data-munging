@@ -550,3 +550,10 @@ def stdntObjSet_to_dict(stdntSet): return {x.sid : x for x in stdntSet}
 #    for e in stdntSet:
 #        outdct[e.sid] = e
 #    return outdct
+
+    
+def filterDct(fn,indct):
+    outdct = {}
+    for k,e in indct.items():
+        if fn(e): outdct[k] = e
+    return outdct

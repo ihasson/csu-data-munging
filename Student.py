@@ -20,28 +20,15 @@
 # 
 
 from Label_Maps import Label_Maps
-# Provides numeric values for grade strings.
-# Need to change scores for non-letter 
-#gradesMap = {  'A+' 'A':4.0,'A-':3.7, #need to update the grade values
-#                'B+':3.3,'B':3.0,'B-':2.7,
-#                'C+':2.3,'C':2.0,'C-':1.7, 
-#                'D+':1.3,'D':1.0,'D-':0.7,
-#                'F':0.0, 'W':0.0,'WU':0.0,   
-#                'CR':2.0, 'NC':0.0, 'RP':0.94 # RP stands for repeat
-#                #,'X1':?, 'X2':? # not enterred symbols on app-dat
-#                }
-#
-#yrmap={ '204':'2004','205':'2005','206':'2006','207':'2007','208':'2008',
-#        '209':'2009','210':'2010','211':'2011','212':'2012','213':'2013',
-#        '214':'2014','215':'2015','216':'2016','217':'2017','203':'2003'}
-#
+
 ## class definition for student may want to create sub classes for
 # highschool application and 
 class Student:
     
     def __init__(self,sid):
         self.sid = sid   # Must be base64 encoded and uniquely identifying.
-        self.hsCourses = [] # each course has pattern [name,grade1,grade2]
+        self.hsCourses = [] # each course
+        self.hsEnglish = []
         self.hsOldCNames = [] # Course names prior to labeling.
         #self.collegeSeq = [] # old list format
         self.ccDict = {} # quick lookup dictionary of college courses
@@ -108,13 +95,44 @@ class Student:
         if len(out) == 0: #print('no course name?!?')
             out['None'] = self.sid
         return out
-
+    
+    def getGradeLevelMath(self, grade_level='12')->"non-empty set of strings":
+        """
+        Takes grade level as string.
+        Returns the set of all course_labels such that
+        the course was taken in the matching grade.
+        If no courses were taken in that grade then 
+        returns a set containing 'None'.
+        """
+        out = set()
+        for e in self.hsCourses:
+            if e.hs_grade_level == grade_level:
+                out.add(e.course_label)
+        if len(out) == 0:
+            out.add('None')
+        return out
+    
+    def hsMathCategory(self, grd_lvl)->"one label output.": 
+        """ takes grade lvl and returns the best course.
+        """
+        courses = self.getGradeLevelMath(grd_lvl)
+        categorized = list(map(lambda x: Label_Maps.hs_label_categ[x], courses))
+        if len(categorized) > 1:
+            # as a place holder rule
+            return 'Multiple'
+        else:
+            return categorized[0]
+        
 ## gets hs courses
     def hs_courses(self, labeled=True):
         out = {}
         for e in self.hsCourses:
             out[e.course_label] = self.sid
         return out
+
+## returns boolean
+    def hasGraduated(self): 
+        return self.grad_term != '9999'
 
 ## gpa_raw e.g. not adjusted for things like retakes
     def gpa_raw(self):
@@ -482,6 +500,23 @@ class Student:
             return best
         else: 
             return None
+    
+    def getACTMath(self):
+        scores = self.getScores2(['ACT','ANY','Math'])
+        return list(map(lambda x: int(x),scores))
+    
+    def hasACT(self):
+        if self.hasExams():
+            return len(self.getACTMath()) > 0
+        else: 
+            return False
+
+    def bestACTMath(self):
+        scores = self.getACTMath()
+        if len(scores) == 0:
+            return 0
+        else: 
+            return max(scores)
 
     def getSATComposite(self) -> "list of (int,int)":
         """ returns list of pairs of all of the student's SATs in the form
@@ -517,6 +552,17 @@ class Student:
             best_satact = max(map(lambda x: int(x),sat_from_act))
             if best_satact > best: best = best_satact
         return best
+    
+    def ACTBetterThanSAT(self):
+        try:
+            if self.hasSAT():
+                sat = self.bestSATComposite()
+                act = self.bestSATCompositeWithACT()
+                return act > sat
+            else: 
+                return self.hasACT()
+        except:
+            return True
 
     def hasELM(self):
         if self.hasExams():
@@ -529,23 +575,53 @@ class Student:
             return max(map(lambda x: int(x), self.getScores('ELM')))
         else: return None
 
+
+    def hasTheirShitTogether(self):
+        #has math in order
+        if len(self.hsCourses) >= 3:
+            for e in self.hsCourses:
+                if e.High_School == None or len(e.High_School) < 2:
+                    return False
+        if len(self.hsEnglish) >= 3:
+            for e in self.hsEnglish:
+                if e.High_School == None or len(e.High_School) < 2:
+                    return False
+        if not(self.hasExams()):
+            return False
+        return True
+                    
+    def HSgpa(self):
+        grades=[]
+        for c in self.hsCourses:
+            grades.append(c.getGrade())
+        return "Finish Later"
+
+## Unlike other elements of student this is meant to be modified.
+#   The point of this class is to collect student application data
+#   to use machine learning on.
+    class HSCourse_FeatureVector:
+        def __init__(self,studentData):
+            self.coursesList = []
+
 class HSCourse:
-    def __init__(self):
-        self.hs_crs_nbr = None
+    def __init__(self,subject='Math',sid=None):
+        self.sid=sid
+        self.subject=subject
+        self.hs_crs_nbr = None # not sure what this is
         self.hs_grade_level = None
-        self.descr = None #name
+        self.descr = None #the course name from the text file.
         self.fall_gr = None
         self.spr_gr = None
         self.summer_gr = None
         self.honors = None
         self.sum2_gr = None
-        #self.cman not a clue what this means
         self.High_School = None
         self.course_source =None # options seem to be "LIST" or "MANL"
         # this is the part where it actually gets alterred
         self.course_best_match=None
-        self.course_label =None
-        
+        self.course_label=None
+        self.bestEditDist=None
+
     def asList(self):
        return [self.hs_crs_nbr, 
                self.hs_grade_level,
@@ -558,6 +634,31 @@ class HSCourse:
                self.High_School,
                self.course_source, 
                self.course_label] 
+
+#    def asFeatures(self):
+#        """ possibly going to be used for building training set """
+#        return dct = {
+#            #self.hs_crs_nbr ,
+#            "gradelvl":self.hs_grade_level ,
+#            #"<not sure what to put here>":self.descr ,
+#            #"grade": self.grade(),
+#            "Honors?":self.honors,
+#            #"High_School":self.High_School ,
+#            #"Entry_Method":self.course_source ,
+#            #self.course_best_match,
+#            "Course_Label":self.course_label,
+#            "editDist_From_Label":self.bestEditDist
+#        }
+    def getGrade(self):
+        grds = [self.fall_gr,
+                self.spr_gr,
+                self.summer_gr,
+                self.sum2_gr]
+        actualGrades = []
+        for e in grds:
+            pass
+        return "Finish Later"
+
 
     def showAll(self):
         print(str(self.descr),str(self.hs_grade_level))

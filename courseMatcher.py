@@ -144,7 +144,7 @@ def findClosest_wd(string, maxDist=7, cantFind="unknown", listOfNames=None):
 
 def generate_overfit_map():
     verimap = {}
-    with open('uniqNames.txt', 'r') as f:
+    with open('data/uniqNames.txt', 'r') as f:
         for line in f:
             categ,name = line.split(',')
             categ = categ.strip()

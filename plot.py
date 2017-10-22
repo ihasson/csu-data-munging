@@ -122,18 +122,22 @@ def plotSAT(data ,title='None',step=False):
         else: plt.plot(x,y,label=cat)
     plt.legend()
     plt.title(title)
-    plt.show()
+    #plt.show()
+    return plt
 
 def plotSATG12(dataset=DATASET):
     data = and_filter(dataset,[lambda x: x.hasSAT()])
     satDct = mapOverNestedDct(G12Math_BestSATMath(data),len,2)
-    plotSAT(satDct,title='Best SAT Math vs Grade 12 Math')
+    plt = plotSAT(satDct,title='Best SAT Math vs Grade 12 Math',step=True)
+    plt.xlabel("SAT Score")
+    plt.ylabel("Number of Students")
 
 # need to rethink this one.
 def plotSATG11(data=DATASET):
+    data = and_filter(data,[lambda x: x.hasSAT()])
     satDct1 = mapOverNestedDct(G11Math_BestSATMath(data),len,2)
     #plot = plt.Subplot()
-    satGradDct = and_filter(data,[lambda x: x.hasGraduated()])
+    #satGradDct = and_filter(data,[lambda x: x.hasGraduated()])
     for cat,d in satDct1.items():
         l = []
         for score,popul in d.items():
@@ -148,5 +152,97 @@ def plotSATG11(data=DATASET):
     
     plt.legend()
     plt.title('grade11 Math')
+    plt.xlabel("SAT Score")
+    plt.ylabel("Number of Students")
     plt.show()
+
+def plotACT(data=DATASET,grdlvl='12',title="",step=False):
+    def getACTs(dct): 
+        dat = filterDct(lambda x: x != None and len(x) > 0,
+            mapOverDct(dct,lambda s: s.getScores2(['ACT','ANY','Math'])))
+        return mapOverDct(dat,lambda ls: max(map(lambda v: int(v), ls)))
+     
+    the_courses = mapOverDct(data, lambda x: [x,x.hsMathCategory(grdlvl)])
+    actDct = getACTs(data)
+    dct1 = {}
+    #want
+    #{course:{actScore: number of students who got the score}}
+    for k,v in the_courses.items():
+        if k in actDct:
+            dct1[k] = {"Course": v[1], "actScore": actDct[k]}
+
+    dct2={}
+    for k,v in dct1.items():
+        if not(v["Course"] in dct2): 
+            dct2[v["Course"]] = { x : 0 for x in range(36)}            
+        dct2[v["Course"]][v["actScore"]] += 1
+
+    plotSAT(dct2,title=title,step=step)
+    plt.xlabel("Math ACT Score")
+    plt.ylabel("Number of Students")
+    plt.show()
+    return dct1,dct2
+
+
+    #better categorization rules 
+    # if only one use old rules 
+    # if 1 is good but and the rest unknown/bad use the good one
+    # if if multiple good ones not sure what to do
+
+    #ACTs_dct_by_categ = mapOverDct(dataDct,getACTs)
+    #return ACTs_dct_by_categ
+    #plotSATDct(ACTs_dct_by_categ,title='act')
+
+def betterACTPlot(data,grdlvl):
+    dat1 = and_filter(data,[lambda x: x.hasACT()])
+    dat2 = first_math2(dat1) 
+    dat3 = {}
+    for k,b in dat2["ACTvsSAT"].items():
+        if b: dat3[k] = data[k]
+    #dat4 = first_math2(dat3)
+     
+    return dat3
+    
+def plotACT2(data=DATASET,grdlvl='12',title="",step=False):
+    def getACTs(dct): 
+        dat = filterDct(lambda x: x != None and len(x) > 0,
+            mapOverDct(dct,lambda s: s.getScores2(['ACT','ANY','Math'])))
+        return mapOverDct(dat,lambda ls: max(map(lambda v: int(v), ls)))
+     
+    the_courses = mapOverDct(data, lambda x: [x,x.hsMathCategory(grdlvl)])
+    actDct = getACTs(data)
+    dct1 = {}
+    #want
+    #{course:{actScore: number of students who got the score}}
+    for k,v in the_courses.items():
+        if k in actDct:
+            dct1[k] = {"Course": v[1], "actScore": actDct[k]}
+
+    dct2={}
+    for k,v in dct1.items():
+        if not(v["Course"] in dct2): 
+            dct2[v["Course"]] = { x : 0 for x in range(36)}            
+        dct2[v["Course"]][v["actScore"]] += 1
+    df = pd.DataFrame(dct2)
+    x = list(range(36))
+    y = df.as_matrix()
+    ### what was this one for again?
+
+
+## this is to generate the final plots.
+## 
+def reportPlots(data=DATASET):
+    data05_15 = and_filter(
+                DATASET, 
+                [   lambda x: int(x.cohort_term)>2055, 
+                    lambda x: int(x.cohort_term)<2157])
+    a,b = plotACT(data05_15, grdlvl='12',title="Math ACT vs grade 12 Math")
+    plotACT(data05_15, grdlvl='11',title="Math ACT vs grade 11 Math")
+    plotSATG12(data05_15)
+    plt.show()
+    plotSATG11(data05_15)
+    plt.show()
+    ## need to revise the below.
+    df.boxplot(column='SAT_math',by='GRD11Math')
+    df.boxplot(column='SAT_math',by='GRD12Math')
 

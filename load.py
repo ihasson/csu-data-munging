@@ -22,7 +22,10 @@ def buildFTFDataSet():
     """ a nice function to construct the FTF data set"""
     matchFun = courseMatcher.construct_matchfun()
     data = rd.read_Large_HS()
-
+    data = rd.read_Large_HS(dct=data,
+                            filename='data/hs-english.txt',
+                            subject='English',
+                            separator='|')
     data = rd.read_College_Courses(dct=data)
     data = rd.read_Progress(dct=data)
     data = rd.read_Math_SAT(dct=data)

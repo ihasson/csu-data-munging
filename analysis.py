@@ -449,33 +449,71 @@ def test_first_math(dataset):
         #"SAT_CR":{k:s.best
         }
     return d1
-def noELM_first_math(dataset):
-    data = and_filter(dataset,[lambda x: (x.hasSAT() and 
-                                (x.first_math_course() != None)),
-                                lambda x: not(x.hasELM())])
-    d1={
-        "first_math":{k:s.first_math() for k,s in data.items()},
-        "first_math_grade":
-            {k:s.first_math_course().grade_val for k,s in data.items()},
-        "grade_letter":
-            {k:s.first_math_course().grade_letter for k,s in data.items()},
-        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
-        "ELM":{k:s.bestELM() for k,s in data.items()}
-        }
-    return d1
 def first_math(dataset):
-    data = and_filter(dataset,[lambda x: x.first_math_course() != None,
+    data = and_filter(dataset, [lambda x: x.first_math_course() != None,
         lambda x: x.hasExams()])
+    def cutoff(n,m,s):
+        try:
+            if m<=n: return None
+            else: return m
+        except:
+            print(s.sid)
     d1={
         "first_math":{k:s.first_math() for k,s in data.items()},
         "first_math_grade":
             {k:s.first_math_course().grade_val for k,s in data.items()},
         "grade_letter":
             {k:s.first_math_course().grade_letter for k,s in data.items()},
-        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
+        "SAT_math":{k:cutoff(-1,s.bestSATMath(),s) for k,s in data.items()},
         "ELM":{k:s.bestELM() for k,s in data.items()},
-        "SAT_Composite":{k:s.bestSATComposite() for k,s in data.items()},
+        #"SAT_Composite":{k:cutoff(-1,s.bestSATComposite(),s) 
+        #    for k,s in data.items()},
         "MPT1":{k:s.getBestScore('MPT1') for k,s in data.items()},
-        "MPT2":{k:s.getBestScore('MPT2') for k,s in data.items()}
+        "MPT2":{k:s.getBestScore('MPT2') for k,s in data.items()},
+        "grad?":{k:s.hasGraduated() for k,s in data.items()},
+        "term_count":{k:s.number_of_terms() for k,s in data.items()},
+        "time_to_grad":{k:cutoff(-1,s.time_to_grad(),s) for k,s in data.items()},
+        "ACT":{k:s.getACTMath() for k,s in data.items()},
+        "GRD11Math":{k:s.hsMathCategory('11') for k,s in data.items()},
+        "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
+        "HSMATHgpa":{k:s.hsGPA() for k,s in data.items()},
+        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()}
         }
     return d1
+
+def first_math2(dataset):
+    data = and_filter(dataset, [lambda x: x.first_math_course() != None,
+        lambda x: x.hasExams()])
+    def cutoff(n,m,s):
+        try:
+            if m<=n: return None
+            else: return m
+        except:
+            print(s.sid)
+    d1={
+        #"first_math":{k:s.first_math() for k,s in data.items()},
+        #"first_math_grade":
+        #    {k:s.first_math_course().grade_val for k,s in data.items()},
+        #"grade_letter":
+        #    {k:s.first_math_course().grade_letter for k,s in data.items()},
+        "SAT_math":{k:cutoff(-1,s.bestSATMath(),s) for k,s in data.items()},
+        "ELM":{k:s.bestELM() for k,s in data.items()},
+        #"SAT_Composite":{k:cutoff(-1,s.bestSATComposite(),s) 
+        #    for k,s in data.items()},
+        "MPT1":{k:s.getBestScore('MPT1') for k,s in data.items()},
+        "MPT2":{k:s.getBestScore('MPT2') for k,s in data.items()},
+        "grad?":{k:s.hasGraduated() for k,s in data.items()},
+        "term_count":{k:s.number_of_terms() for k,s in data.items()},
+        "time_to_grad":{k:cutoff(-1,s.time_to_grad(),s) for k,s in data.items()},
+        "ACT":{k:s.getACTMath() for k,s in data.items()},
+        "GRD11Math":{k:s.hsMathCategory('11') for k,s in data.items()},
+        "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
+        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()}
+        }
+    return d1
+
+def makingsomeboxplots(data=DATASET):
+    d = mapOverDct(
+            partitionByHSMathCategory(data),
+            [lambda x: pd.DataFrame(first_math(x))])
+    return d

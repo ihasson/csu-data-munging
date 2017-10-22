@@ -19,7 +19,7 @@
 # 
 
 #need to find out what WU means in gradesMap!
-import binascii
+#import binascii
 import courseMatcher
 import re
 import sys
@@ -32,21 +32,21 @@ import pickle
 # For mapping highschool course names to integers.
 # The assumed scoring system is the sum of the integers with 0 for things 
 # not in the dictionary or if there was never anything to begin with
-hsClassesDict = { #Depricated#
-        'algebra 1':2,  'algebra 2':8,  'geometry':4,   'calculus':64,
-        'pre-calculus':16,  'trigenometry':16,  'statistics':32,
-        'math analysis':16,   'trig/alg':16,  'alg/trig':16,  'algebra':0,
-        'unknown':-1
-        }
-
+#hsClassesDict = { #Depricated#
+#        'algebra 1':2,  'algebra 2':8,  'geometry':4,   'calculus':64,
+#        'pre-calculus':16,  'trigenometry':16,  'statistics':32,
+#        'math analysis':16,   'trig/alg':16,  'alg/trig':16,  'algebra':0,
+#        'unknown':-1
+#        }
+#
 #note: precalc equivalencies may be subject to change.
-apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
-        'math_anal' 'trigonometry' 'geo_alg_trig' 'precalc': 'precalc'}
-
-hsClasslevels = {'algebra1':8, 'geometry':9, 'algebra2':10, 'precalc':11,
-        'stats':11, 'calculus':12, 'bad':0, 'unknown':0}
-        #, 'data_science':,'discrete_math': }# to be determined
-
+#apparent_equivs = {'adv_app_math' 'geometry' : 'geometry',
+#        'math_anal' 'trigonometry' 'geo_alg_trig' 'precalc': 'precalc'}
+#
+#hsClasslevels = {'algebra1':8, 'geometry':9, 'algebra2':10, 'precalc':11,
+#        'stats':11, 'calculus':12, 'bad':0, 'unknown':0}
+#        #, 'data_science':,'discrete_math': }# to be determined
+#
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
 gradesMap = {  'A+' 'A':4.0,'A-':4, #need to update the grade values
@@ -59,8 +59,8 @@ gradesMap = {  'A+' 'A':4.0,'A-':4, #need to update the grade values
                 }
 
 
-def b16tob64(str16):
-    return bytes.decode(binascii.unhexlify(str16))
+#def b16tob64(str16): #do I still need this for anything?
+#    return bytes.decode(binascii.unhexlify(str16))
 
 # Only for those 3 highschools. 
 # Returns a list of Students with their highschool classes.
@@ -216,19 +216,20 @@ def constructDataTable():
 ## reads a particular formatted file of student transcripts
 #  not sure what to do with this now that it is clear that the highschool data
 # was encoded differently from everything else.
-def read_Large_HS(filename='hs-math.csv',dictionary={}):
+def read_Large_HS(filename='data/hs-math.csv',dct={},subject=None,
+        separator=','):
     with open(filename,'r') as f:
         f.readline()
         for line in f.readlines():
             line = line.rstrip()
-            st_inf = line.split(',')
+            st_inf = line.split(separator)
             sid = st_inf[0]
             st=None
-            if sid in dictionary:
-                st = dictionary[sid]
+            if sid in dct:
+                st = dct[sid]
             else:
                 st = Student(sid)
-                dictionary[sid] = st
+                dct[sid] = st
             c_inf = HSCourse()
             # st_inf[1] is always '2'
             c_inf.hs_crs_nbr = st_inf[2]
@@ -243,8 +244,13 @@ def read_Large_HS(filename='hs-math.csv',dictionary={}):
             c_inf.High_School      = str.upper(st_inf[11])
             c_inf.course_source    = st_inf[12]
             #c_inf.course_label     = somecoursematcher( descr )
-            st.hsCourses.append(c_inf)
-    return dictionary
+            if subject == None:
+                st.hsCourses.append(c_inf)
+            elif subject == 'English':
+                st.hsEnglish.append(c_inf)
+            else:
+                raise NameError("subject option"+ subject +"not defined")
+    return dct
 
 ## reads college sequences only for those 3 schools.
 # 
@@ -458,13 +464,16 @@ def read_Exams(fname='data/full-exams-database.txt',dct={},header=False):
 ## a read all the data I have function
 def readall():
     data = {}
-    data = read_Large_HS(dictionary=data)
+    data = read_Large_HS(dct=data)
     read_College_Courses(dct=data)
     #data = read_College_Seq(dct=data # possibly need to reenable this.)
     data = read_Progress(dct=data)
     data = read_Cohorts(dct=data)
     data = read_Math_SAT(dct=data) # this is so I can check data files.
     data = read_Exams(dct=data)
+    data = read_Large_HS(dct=data,
+                         filename='data/hs-english.txt',
+                         subject='English',separator='|')
     #for e in data:                     #and this
     #    data[e].oldCourseInfoToNew()
     return data
@@ -480,4 +489,3 @@ def load_data():
     with open("datafile.txt","rb") as f:
         d = pickle.load(f)
         return d
-
