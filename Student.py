@@ -590,11 +590,19 @@ class Student:
             return False
         return True
                     
-    def HSgpa(self):
+    def hsGPA(self):
         grades=[]
         for c in self.hsCourses:
-            grades.append(c.getGrade())
-        return "Finish Later"
+            grs = c.getGrades()
+            if grs == None:
+                pass
+            else:
+                grades.extend(grs)
+        grades = list(filter(lambda x: x != None,grades))
+        if len(grades) > 0:
+            return sum(grades)/len(grades)
+        else: 
+            return None
 
 ## Unlike other elements of student this is meant to be modified.
 #   The point of this class is to collect student application data
@@ -649,16 +657,30 @@ class HSCourse:
 #            "Course_Label":self.course_label,
 #            "editDist_From_Label":self.bestEditDist
 #        }
-    def getGrade(self):
-        grds = [self.fall_gr,
-                self.spr_gr,
-                self.summer_gr,
-                self.sum2_gr]
-        actualGrades = []
-        for e in grds:
-            pass
-        return "Finish Later"
-
+    def getGrades(self):
+        try:
+            if int(self.hs_grade_level) <9:
+                return None
+            grds = [self.fall_gr,
+                    self.spr_gr,
+                    self.summer_gr,
+                    self.sum2_gr]
+            actualGrades = []
+            gradesmap = Label_Maps.gradesMap.copy()
+            def gradeval(x):
+                if x in gradesmap:
+                    return gradesmap[x]
+                else: 
+                    return None
+            grds = map(gradeval, grds)
+            grds =  list(filter(lambda x: x != None, grds))
+            if len(grds) == 0:
+                return None
+            else:
+                return grds
+        except: 
+            print(self.sid,"  getGrade failed")    
+            return None
 
     def showAll(self):
         print(str(self.descr),str(self.hs_grade_level))

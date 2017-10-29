@@ -243,6 +243,4 @@ def reportPlots(data=DATASET):
     plotSATG11(data05_15)
     plt.show()
     ## need to revise the below.
-    df.boxplot(column='SAT_math',by='GRD11Math')
-    df.boxplot(column='SAT_math',by='GRD12Math')
-
+    #df.boxplot(column='SAT_math',by='GRD11Math')

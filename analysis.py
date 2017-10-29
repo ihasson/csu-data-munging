@@ -476,7 +476,7 @@ def first_math(dataset):
         "ACT":{k:s.getACTMath() for k,s in data.items()},
         "GRD11Math":{k:s.hsMathCategory('11') for k,s in data.items()},
         "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
-        "HSMATHgpa":{k:s.hsGPA() for k,s in data.items()},
+        "HS_Math_GPA":{k:s.hsGPA() for k,s in data.items()},
         "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()}
         }
     return d1
