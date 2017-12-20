@@ -230,7 +230,7 @@ def plotACT2(data=DATASET,grdlvl='12',title="",step=False):
 
 
 ## this is to generate the final plots.
-## 
+##  
 def reportPlots(data=DATASET):
     data05_15 = and_filter(
                 DATASET, 
@@ -242,5 +242,15 @@ def reportPlots(data=DATASET):
     plt.show()
     plotSATG11(data05_15)
     plt.show()
-    ## need to revise the below.
-    #df.boxplot(column='SAT_math',by='GRD11Math')
+    df =pd.DataFrame(first_math(DATASET))
+    df.boxplot(column='SAT_math',by='GRD11Math')
+    plt.show()
+    df.boxplot(column='SAT_math',by='GRD12Math')
+    plt.show()
+    df.boxplot(column='ELM',by=['GRD11Math'])
+    print(df[df.ACTvsSAT == False].groupby(['GRD12Math']).size())
+    print(df[df.ACTvsSAT == False].groupby(['SAT_math','GRD11Math']).size())
+    return df
+    #g11.annotate('SomeString',xy=(200,200))
+    #plt.show(g11)
+
