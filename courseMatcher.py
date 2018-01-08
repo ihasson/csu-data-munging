@@ -102,7 +102,7 @@ def justClean(string):
     except:
         print(string)
 
-## 
+## I think this is deprecated but not sure.
 #   Takes a string and finds the closest match from a list of strings.
 # Params: 
 #    string : the thing you want to match to
@@ -153,6 +153,20 @@ def generate_overfit_map():
     verimap['unknown'] = 'unknown'
     return verimap
 
+#if the proportion of the edit_distance is to large compared to the shorter of 
+#the two words then we don't want it.
+def satisfies_length_ratio_rule(word1,word2,edit_dist,ratio=1/2):
+    def shorter(word1, word2):
+        if len(word1) < len(word2): return word1
+        else: return word2
+
+    length_diff = abs(len(word1) - len(word2))
+    shorter_word = shorter(word1,word2)
+    
+    return not(edit_dist >= len(shorter_word)*ratio)
+
+
+
 #need to add some way to add per label rules more easily
 def construct_matchfun():
     courseDct= generate_overfit_map()
@@ -173,6 +187,11 @@ def construct_matchfun():
         #print(bestMatch)
         bestMatch,distance = findClosest_wd(modName, 
                 maxDist=6,listOfNames=namelist)
+
+# check various rules for validity of bestMatch
+        #new rule checking against length
+        if not(satisfies_length_ratio_rule(modName,bestMatch,distance,1/4)):
+            return 'unknown'
         # have to guard algebra2 against algrebra 1
         if improvedCourseDct[bestMatch] == 'algebra2':
             if (modName.find('1') > -1) or (modName.find('2') < 4):
