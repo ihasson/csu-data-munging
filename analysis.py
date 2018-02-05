@@ -229,7 +229,7 @@ def compute_first_course_grades(dct):
     return pfg
 
 ## not sure what to name this it returns results about how courses were labeled
-def f(dct):
+def labeling_info(dct):
     matched = {}
     matchedLabel = {}
     notMatched = {}
@@ -450,6 +450,13 @@ def test_first_math(dataset):
         }
     return d1
 def first_math(dataset):
+    def getKeys(s):
+        a = s.grd12math()
+        return list(a.keys())
+    def bool_to_int(x): 
+        if x: return 1 
+        else: return 0
+
     data = and_filter(dataset, [lambda x: x.first_math_course() != None,
         lambda x: x.hasExams()])
     def cutoff(n,m,s):
@@ -473,17 +480,36 @@ def first_math(dataset):
         "grad?":{k:s.hasGraduated() for k,s in data.items()},
         "term_count":{k:s.number_of_terms() for k,s in data.items()},
         "time_to_grad":{k:cutoff(-1,s.time_to_grad(),s) for k,s in data.items()},
-        "ACT":{k:s.getACTMath() for k,s in data.items()},
+        "ACT_Math":{k:max(s.getACTMath()) for k,s in data.items()},
         "GRD11Math":{k:s.hsMathCategory('11') for k,s in data.items()},
         "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
         "HS_Math_GPA":{k:s.hsGPA() for k,s in data.items()},
-        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()}
+        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()},
+        "Cohort":{k:s.cohort_term for k,s in data.items()},
+        "units_total":{k:s.units_total() for k,s in data.items()},
+        "4year_grad":{k:bool_to_int(s.fourYearGrad()) for k,s in data.items()},
+        "6year_grad":{k:bool_to_int(s.sixYearGrad()) for k,s in data.items()},
+        "G12M_arr":{k:getKeys(s) for k,s in data.items()}
         }
     return d1
 
-def first_math2(dataset):
+
+def big_table(dataset):
+    def getKeys(s):
+        a = s.grd12math()
+        return list(a.keys())
+    def bool_to_int(x): 
+        if x: return 1 
+        else: return 0
+
     data = and_filter(dataset, [lambda x: x.first_math_course() != None,
-        lambda x: x.hasExams()])
+        lambda x: x.hasExams(),
+        lambda x: x.weighted_hs_Math_GPA() != None ,
+        lambda x: x.weighted_hs_Math_GPA() >= 0,
+        lambda x: x.max_hs_math_level() != None,
+        lambda x: x.max_hs_math_level() > 2,
+        lambda x: int(x.cohort_term) >= 2067])
+
     def cutoff(n,m,s):
         try:
             if m<=n: return None
@@ -491,11 +517,11 @@ def first_math2(dataset):
         except:
             print(s.sid)
     d1={
-        #"first_math":{k:s.first_math() for k,s in data.items()},
-        #"first_math_grade":
-        #    {k:s.first_math_course().grade_val for k,s in data.items()},
-        #"grade_letter":
-        #    {k:s.first_math_course().grade_letter for k,s in data.items()},
+        "first_math":{k:s.first_math() for k,s in data.items()},
+        "first_math_grade":
+            {k:s.first_math_course().grade_val for k,s in data.items()},
+        "grade_letter":
+            {k:s.first_math_course().grade_letter for k,s in data.items()},
         "SAT_math":{k:cutoff(-1,s.bestSATMath(),s) for k,s in data.items()},
         "ELM":{k:s.bestELM() for k,s in data.items()},
         #"SAT_Composite":{k:cutoff(-1,s.bestSATComposite(),s) 
@@ -505,15 +531,34 @@ def first_math2(dataset):
         "grad?":{k:s.hasGraduated() for k,s in data.items()},
         "term_count":{k:s.number_of_terms() for k,s in data.items()},
         "time_to_grad":{k:cutoff(-1,s.time_to_grad(),s) for k,s in data.items()},
-        "ACT":{k:s.getACTMath() for k,s in data.items()},
+        "ACT_Math":{k:s.bestACTMath() for k,s in data.items()},
         "GRD11Math":{k:s.hsMathCategory('11') for k,s in data.items()},
         "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
-        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()}
+        "HS_Math_GPA_UnWeighted":{k:s.hsGPA() for k,s in data.items()},
+        "HS_Math_GPA":{k:s.weighted_hs_Math_GPA() for k,s in data.items()},
+        "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()},
+        "Cohort":{k:s.cohort_term for k,s in data.items()},
+        "units_total":{k:s.units_total() for k,s in data.items()},
+        "4year_grad":{k:bool_to_int(s.fourYearGrad()) for k,s in data.items()},
+        "6year_grad":{k:bool_to_int(s.sixYearGrad()) for k,s in data.items()},
+        "G12M_arr":{k:getKeys(s) for k,s in data.items()},
+        # the following 3 refer to the AP test scores 
+        # not sure what to do about BC Single & AB Subscore Grade
+        "AP_Calculus_AB": {k:s.getBestScore2(['AP','ANY','Calculus AB']) 
+            for k,s in data.items()},
+        "AP_Calculus_BC": {k:s.getBestScore2(['AP','ANY','Calculus BC']) 
+            for k,s in data.items()},
+        "AP_Statistics": {k:s.getBestScore2(['AP','ANY','Statistics'])
+            for k,s in data.items()},
+        "AP_Calc_BC_S": {k:s.getBestScore2(['AP','ANY','Calculus BC Single']) 
+            for k,s in data.items()},
+        "AP_Calc_AB_S": 
+            {k:s.getBestScore2(['AP','ANY','Calculus AB Subscore Grade']) 
+                for k,s in data.items()},
+        "first_major": {k:s.firstMajor() for k,s in data.items()},
+        "first_major_STEM?": {k:s.firstMajorSTEM() for k,s in data.items()},
+        "max_hs_math_level": 
+            {k:s.max_hs_math_level() for k,s in data.items()}
+        
         }
     return d1
-
-def makingsomeboxplots(data=DATASET):
-    d = mapOverDct(
-            partitionByHSMathCategory(data),
-            [lambda x: pd.DataFrame(first_math(x))])
-    return d

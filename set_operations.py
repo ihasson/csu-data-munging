@@ -485,10 +485,12 @@ def partitionByHSMathCategory(dataSet,catMap=None,gradelvl='12'):
     """ Breaks up students categorically
     """
     outDCT = {'No Math':{}}
+    student_key_for_debug = None
     if catMap == None:
         catMap = Label_Maps.Label_Maps.hs_label_categ
     try:
         for k,s in dataSet.items():
+            student_key_for_debug = k
             tookgrade12Math = False
             for c in s.hsCourses:
                 if c.hs_grade_level == gradelvl:
@@ -500,7 +502,8 @@ def partitionByHSMathCategory(dataSet,catMap=None,gradelvl='12'):
             if not(tookgrade12Math):
                 outDCT['No Math'][k] = s
     except:
-        print(k)
+        print("error in PartitionByHSMathCategory")
+        print(student_key_for_debug)
     return outDCT
 
 # Need to test this function at some point.

@@ -5,14 +5,14 @@ class Label_Maps:
 #        'algebra2': 'Algebra 2',
 #        'none': 'None',
 #        'stats': 'Statistics',
-#        'adv_app_math' 'adv_math' 'geometry' 'adv_alg': 'Remedial',
+#        'adv_app_math' 'adv_math' 'geometry' 'adv_alg': 'Possibly Remedial',
 #        'bad''pre_alg''accounting' 'col_alg' : 'Other'}
     hs_label_categ = {
         'accounting':'Other',
         'adv_alg': 'Algebra 2', #Is this algebra 2 or remedial?
-        'adv_app_math': 'Remedial',
-        'adv_math': 'Remedial',
-        'alg_trig': 'Remedial',
+        'adv_app_math': 'Possibly Remedial',
+        'adv_math': 'Possibly Remedial',
+        'alg_trig': 'Possibly Remedial',
         'algebra1': 'Other',
         'algebra2': 'Algebra 2',
         'bad': 'Other',
@@ -21,8 +21,8 @@ class Label_Maps:
         'data_science': 'Other',
         'discrete_math': 'Other',
         'finite_math': 'Other',
-        'geo_alg_trig': 'Remedial',
-        'geo_trig': 'Remedial',
+        'geo_alg_trig': 'Possibly Remedial',
+        'geo_trig': 'Possibly Remedial',
         'geometry': 'Geometry',
         'int_math_1': 'Other',
         'int_math_2': 'Other',
@@ -42,8 +42,18 @@ class Label_Maps:
         'None': 'No Math'
         }
    
-    hs_label_categ_lst = ['Calculus Prep','Remedial','Other','Algebra 2',
-            'No Math', 'Geometry', 'Calculus', 'Statistics']
+    hs_label_categ_lst = ['Calculus Prep','Possibly Remedial','Other','Algebra 2'
+            ,'No Math', 'Geometry', 'Calculus', 'Statistics']
+
+    hs_label_cat_ranked = {
+            'Calculus Prep':11,
+            'Possibly Remedial':1,
+            'Other':2,
+            'Algebra 2':10,
+            'No Math':0,
+            'Geometry':9,
+            'Calculus':13, 
+            'Statistics':12 }
 
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 

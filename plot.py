@@ -250,7 +250,11 @@ def reportPlots(data=DATASET):
     df.boxplot(column='ELM',by=['GRD11Math'])
     print(df[df.ACTvsSAT == False].groupby(['GRD12Math']).size())
     print(df[df.ACTvsSAT == False].groupby(['SAT_math','GRD11Math']).size())
+    dfgrad = df.loc[df['grad?'] == True]
+    dfgrad.boxplot(column='term_count',by='GRD12Math')
+    dfgrad.boxplot(column='grad?',by='GRD12Math')
+    # the counts for each GRD12MATH class
+    print(dfgrad.groupby(['GRD12Math']).size())
     return df
     #g11.annotate('SomeString',xy=(200,200))
-    #plt.show(g11)
 

@@ -26,6 +26,7 @@ def termTransitionSeries(numTerms):
     return transitions
 
 def transitionMat(dataSet):
+    
     def addToTM(t_c,term1,term2,transition):
         if not(term1 in t_c) or not(term2 in t_c):
             return transition
@@ -40,6 +41,7 @@ def transitionMat(dataSet):
                 else:
                     transition[course1][course2] = 1
         return transition
+
     transitions = {}
     maxterms = 0
     student_term_courses = {}

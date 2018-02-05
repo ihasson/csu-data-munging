@@ -155,7 +155,7 @@ def generate_overfit_map():
 
 #if the proportion of the edit_distance is to large compared to the shorter of 
 #the two words then we don't want it.
-def satisfies_length_ratio_rule(word1,word2,edit_dist,ratio=1/2):
+def satisfies_length_ratio_rule(word1,word2,edit_dist,ratio=1/4):
     def shorter(word1, word2):
         if len(word1) < len(word2): return word1
         else: return word2
@@ -190,6 +190,8 @@ def construct_matchfun():
 
 # check various rules for validity of bestMatch
         #new rule checking against length
+        # removed because too late and too little impact.
+        # i.e. the course matching was fine before.
         if not(satisfies_length_ratio_rule(modName,bestMatch,distance,1/4)):
             return 'unknown'
         # have to guard algebra2 against algrebra 1

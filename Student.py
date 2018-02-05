@@ -20,7 +20,8 @@
 # 
 
 from Label_Maps import Label_Maps
-
+import re
+get_grade_failed = []
 ## class definition for student may want to create sub classes for
 # highschool application and 
 class Student:
@@ -468,6 +469,12 @@ class Student:
             return max(scores)
         else: return None
 
+    def getBestScore2(self,test=['AP','ANY','Calculus AB']):
+        scores = list(map(lambda x: int(x), self.getScores2(test)))
+        if len(scores) > 0:
+            return max(scores)
+        else: return None
+
     def hasExams(self):
         """ if student has any exams in the full exams database returns true.
         """
@@ -514,7 +521,7 @@ class Student:
     def bestACTMath(self):
         scores = self.getACTMath()
         if len(scores) == 0:
-            return 0
+            return None
         else: 
             return max(scores)
 
@@ -575,7 +582,6 @@ class Student:
             return max(map(lambda x: int(x), self.getScores('ELM')))
         else: return None
 
-
     def hasTheirShitTogether(self):
         #has math in order
         if len(self.hsCourses) >= 3:
@@ -604,6 +610,44 @@ class Student:
         else: 
             return None
 
+#check the course sources 
+    def check_all_hsCourses_from_LIST(hsCourseList):
+        for e in hsCourseList:
+            if e.course_source != 'LIST': return False
+        return True
+
+    def weighted_hs_Math_GPA(self):            
+        w_grades = [] #[course.weightedGrade() for course in self.hsCourses]
+        for course in self.hsCourses:
+            if course.weightedGrade() != None:
+                w_grades.append(course.weightedGrade())
+        if len(w_grades)>0:
+            return sum(w_grades)/len(w_grades)
+        else:
+            return None
+
+    def firstMajor(self):
+        if len(self.majors) > 0:
+            self.majors.sort()
+            return self.majors[0][1]
+        else: return None
+## for now
+#   0 No
+#   1 Yes
+#   None no major or don't know
+    def firstMajorSTEM(self):
+        return None
+    
+    def max_hs_math_level(self,categories=Label_Maps.hs_label_categ):
+        try:
+            courses = []
+            for e in self.hsCourses:
+                courses.append(categories[e.course_label])
+            return(max(map(lambda x: Label_Maps.hs_label_cat_ranked[x],courses)))
+        except:
+            print("error in took_math_beyon_alg2 "+self.sid)
+            return None
+
 ## Unlike other elements of student this is meant to be modified.
 #   The point of this class is to collect student application data
 #   to use machine learning on.
@@ -621,7 +665,7 @@ class HSCourse:
         self.fall_gr = None
         self.spr_gr = None
         self.summer_gr = None
-        self.honors = None
+        self.honors = None 
         self.sum2_gr = None
         self.High_School = None
         self.course_source =None # options seem to be "LIST" or "MANL"
@@ -629,6 +673,7 @@ class HSCourse:
         self.course_best_match=None
         self.course_label=None
         self.bestEditDist=None
+       # self.weightedGrade=None
 
     def asList(self):
        return [self.hs_crs_nbr, 
@@ -643,20 +688,8 @@ class HSCourse:
                self.course_source, 
                self.course_label] 
 
-#    def asFeatures(self):
-#        """ possibly going to be used for building training set """
-#        return dct = {
-#            #self.hs_crs_nbr ,
-#            "gradelvl":self.hs_grade_level ,
-#            #"<not sure what to put here>":self.descr ,
-#            #"grade": self.grade(),
-#            "Honors?":self.honors,
-#            #"High_School":self.High_School ,
-#            #"Entry_Method":self.course_source ,
-#            #self.course_best_match,
-#            "Course_Label":self.course_label,
-#            "editDist_From_Label":self.bestEditDist
-#        }
+##
+##
     def getGrades(self):
         try:
             if int(self.hs_grade_level) <9:
@@ -678,8 +711,10 @@ class HSCourse:
                 return None
             else:
                 return grds
-        except: 
-            print(self.sid,"  getGrade failed")    
+        except:
+            print(self.sid,"  getGrade failed")
+            global get_grade_failed
+            get_grade_failed.append(self.sid)
             return None
 
     def showAll(self):
@@ -694,22 +729,44 @@ class HSCourse:
         if self.course_label in apparent_equivs:
             self.course_label = apparent_equivs[self.course_label]
 
-#    def set_course_label_categorically(self,matchfun):
-#        """ Sets course labels same as before but now with an additional
-#            categorical labeling step
-#        """
-#        apparent_equivs = {'geometry' : 'geometry',
-#                'trigonometry' 'precalc' 'trig_and_precalc': 'precalc'}
-#        self.course_label = matchfun(self.descr)
-#        if self.course_label in apparent_equivs:
-#            self.course_label = apparent_equivs[self.course_label]
-
 ## Returns a course name. Should not be used with course match.
     def getCourseName(self):
         if self.course_label != None:
             return self.course_label
         else:
             return self.descr
+## 
+    def courseCategory(self,categoryDct = Label_Maps.hs_label_categ):
+        return categoryDct[self.course_label]
+
+# In general an AP course must be from a select list of courses and 
+# have 'AP' somewhere in its name.
+# For determining AP Calc, must have AB or BC in there.
+    def isAPMath(self):
+        if self.courseCategory() == 'Statistics':
+            if (re.search("AP", self.descr, re.IGNORECASE) and
+                self.course_label == 'stats'):
+                return True
+        elif self.courseCategory() == 'Calculus':
+            if (re.search("AP", self.descr, re.IGNORECASE) and
+                self.course_label == 'calculus' and 
+                (re.search("AB",self.descr, re.IGNORECASE) or
+                    re.search("BC",self.descr, re.IGNORECASE))):
+                    return True
+        else: 
+            return False
+
+    def weightedGrade(self):
+        grades = self.getGrades()
+        if (grades != None) and (len(grades)>0):
+            if self.isAPMath():
+                return (sum(grades)/len(grades))+1
+            elif self.honors:
+                return (sum(grades)/len(grades))+0.5
+            else:
+                return sum(grades)/len(grades)
+        else:
+            return None
 
 ## need a get grade func.
 
