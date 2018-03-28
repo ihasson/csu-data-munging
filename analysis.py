@@ -254,6 +254,8 @@ def labeling_info(dct):
                     matched[hsc.descr] = 1
     return matched,notMatched,matchedLabel
 
+## makes a data frame for something 
+# should probably be deprecated.
 def makeDf(data):
     clmns = ['first_term','last_term','grad_term','lastHsCourse']
     rowlist = []
@@ -434,21 +436,6 @@ def sat_first_math(dataset):
         "SAT_math":{k:s.bestSATMath() for k,s in data.items()}
         }
     return d1
-def test_first_math(dataset):
-    data = and_filter(dataset,[lambda x: (x.hasSAT() and 
-                                (x.first_math_course() != None)),
-                                lambda x: x.hasELM()])
-    d1={
-        "first_math":{k:s.first_math() for k,s in data.items()},
-        "first_math_grade":
-            {k:s.first_math_course().grade_val for k,s in data.items()},
-        "grade_letter":
-            {k:s.first_math_course().grade_letter for k,s in data.items()},
-        "SAT_math":{k:s.bestSATMath() for k,s in data.items()},
-        "ELM":{k:s.bestELM() for k,s in data.items()}
-        #"SAT_CR":{k:s.best
-        }
-    return d1
 def first_math(dataset):
     def getKeys(s):
         a = s.grd12math()
@@ -558,7 +545,37 @@ def big_table(dataset):
         "first_major": {k:s.firstMajor() for k,s in data.items()},
         "first_major_STEM?": {k:s.firstMajorSTEM() for k,s in data.items()},
         "max_hs_math_level": 
-            {k:s.max_hs_math_level() for k,s in data.items()}
-        
+            {k:s.max_hs_math_level() for k,s in data.items()},
+        "English GPA-unweighted": 
+            {k:s.hsGPA(s.hsEnglish) for k,s in data.items()},
+        "SAT_Verbal":
+            {k:s.getBestScore2(['SAT','ANY','Verbal']) for k,s in data.items()},
+        "ACT_English": 
+            {k:s.getBestScore2(['ACT','ANY','English']) for k,s in data.items()},
+        "AP_English_Comp_&_Lit.":
+            {k:s.getBestScore2(['AP','ANY','English Comp & Lit'])
+                    for k,s in data.items()},
+        "AP_English_Lang_&_Comp":
+            {k:s.getBestScore2(['AP','ANY','English Lang & Comp'])
+                    for k,s in data.items()},
+        "HS_English_GPA": # need to change. 
+            {k:s.weighted_hs_Englis_GPA(s.hsEnglish) for k,s in data.items()},
         }
     return d1
+
+def table_Cohort_course_descr_length(dataset):
+    data = and_filter(dataset, [lambda x: x.first_math_course() != None,
+        lambda x: x.hasExams(),
+        lambda x: x.weighted_hs_Math_GPA() != None ,
+        lambda x: x.weighted_hs_Math_GPA() >= 0,
+        lambda x: x.max_hs_math_level() != None,
+        lambda x: x.max_hs_math_level() > 2,
+        lambda x: int(x.cohort_term) >= 2067])
+    
+    l = []
+
+    for k,s in data.items():
+        for c in s.hsEnglish:
+            l.append([int(s.cohort_term),len(c.descr), c.descr])
+
+    return l

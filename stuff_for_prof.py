@@ -87,9 +87,11 @@ def getAPMathStuff():
     
     return spMathStudents
 
-def cats(df): #must be a pandas data frame
-    #df = pd.DataFrame(big_table(data))
+#Really need to go over those logical quantifiers.
 
+def MathCategories(df): #must be a pandas data frame
+    #df = pd.DataFrame(big_table(data))
+### might have gotten 'and' and or mixed up.
     df["CATEGORY_1"] = (( 
         (df["AP_Calculus_AB"] >= 3) |
         (df["AP_Calculus_BC"] >= 3) |
@@ -99,34 +101,79 @@ def cats(df): #must be a pandas data frame
         & ((df["ACT_Math"] > 0) | (df["SAT_math"] > 0))
         & (df["HS_Math_GPA"] > 0))
 
-    df["CATEGORY_2"] =  (
+    df["CATEGORY_2"] =(  (
         ((df["ACT_Math"]>=23) | (df["SAT_math"]) >= 550) | 
         ((df["ACT_Math"]>=20) | (df["SAT_math"] >= 490) 
-               & (df["max_hs_math_level"] >= 11.0)) &
-        (df["HS_Math_GPA"] >= 3) )
+            & (df["max_hs_math_level"] >= 11.0)) | # this could be a problem
+        (df["HS_Math_GPA"] >= 3.5)) 
+        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"]> 0))
+        )
 
-    df["CATEGORY_3"] = ( 
-        ~(df["ACT_Math"] >= 20) & 
-        ~(df["SAT_math"] >= 490) &
-        (df["HS_Math_GPA"] >= 3.3) )
+    df["CATEGORY_3"] = (( 
+        ((df["ACT_Math"] >= 20) | 
+         (df["SAT_math"] >= 490) ) |
+        (df["HS_Math_GPA"] >= 3.3) ) 
+        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"] > 0)))
 
     df["CATEGORY_4"] = (
         ~(  df["CATEGORY_1"] |
             df["CATEGORY_2"] |
-            df["CATEGORY_3"]    ) )
+            df["CATEGORY_3"]) 
+        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"]> 0)))
 
     df["CAT_1"] = df["CATEGORY_1"]*1
     df["CAT_2"] = (df["CATEGORY_2"] & ~(df["CATEGORY_1"]))*1
     df["CAT_3"] = (df["CATEGORY_3"] & ~(df["CATEGORY_1"]) & ~(df["CATEGORY_2"]))*1
-    df["CAT_4"] = df["CATEGORY_4"] # CAT_4 contains cat_4*
+    df["CAT_4"] = df["CATEGORY_4"]*1 # CAT_4 contains cat_4*
     df["cat_4*"] = (
             ((~(df["ACT_Math"] >= 20) & (df["SAT_math"] < 490)) |
             ((df["ACT_Math"] < 20) & ~(df["SAT_math"] >= 490)))
             & (df["CAT_1"] == 0)
             & ~(df["HS_Math_GPA"] >= 3.3))*1
-   #CAT_5 for unkown
-    df["CAT_5"] = df["CAT_4"]-df["cat_4*"]
+
+    
+    df["CAT_5"] = (~(df["CATEGORY_1"] | df["CATEGORY_2"] |
+            df["CATEGORY_3"] | df["CATEGORY_4"]))*1
+   
     return df
+
+def EnglishCategories(df):
+    df["E_Category_1"] = ((
+        (df["AP_English_Comp_&_Lit."] >= 3) |
+        (df["AP_English_Lang_&_Comp"] >= 3)) 
+        & ((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0))
+        & (df["HS_English_GPA"] > 0))
+                            
+    df["E_Category_2"] =( ~(df["E_Category_1"]) & (
+            (df["SAT_Verbal"] >= 500)  |
+            (df["ACT_English"] >= 22) |
+            (df["English GPA-unweighted"] >= 3.3)) 
+            & (((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0)) & 
+                (df["English GPA-unweighted"] > 0)))
+
+    df["E_Category_3"] =( ~(df["E_Category_1"] | df["E_Category_2"]) & (
+            ((df["SAT_Verbal"] < 500) & 
+             (df["SAT_Verbal"] >= 460)) |
+            ((df["ACT_English"] >= 19) & (df["ACT_English"] <22 )) |
+            ((df["English GPA-unweighted"] >= 3.0) &
+                (df["English GPA-unweighted"] < 3.3))) & 
+            (((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0)) & 
+                (df["English GPA-unweighted"] > 0)))
+
+    df["E_Category_4"] = ~(
+        (df["AP_English_Comp_&_Lit."] >= 3) |
+        (df["AP_English_Lang_&_Comp"] >= 3) | 
+        (df["English GPA-unweighted"] >= 3.0) |
+        (df["ACT_English"] >= 19) |
+        (df["SAT_Verbal"] >= 460) )
+    df["E_C1"] = (df["E_Category_1"])*1
+    df["E_C2"] = (df["E_Category_2"])*1
+    df["E_C3"] = (df["E_Category_3"])*1
+    df["E_C4"] = (df["E_Category_4"])*1
+    df["E_C5"] = (~(df["E_Category_4"] |
+            df["E_Category_3"] | df["E_Category_2"] | df["E_Category_1"]))*1
+    return df
+
 #graduationRates(DATASET)
 #graduationRates1(DATASET)
 #

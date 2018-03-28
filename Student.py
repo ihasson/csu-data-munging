@@ -28,7 +28,7 @@ class Student:
     
     def __init__(self,sid):
         self.sid = sid   # Must be base64 encoded and uniquely identifying.
-        self.hsCourses = [] # each course
+        self.hsMath = [] # each course
         self.hsEnglish = []
         self.hsOldCNames = [] # Course names prior to labeling.
         #self.collegeSeq = [] # old list format
@@ -596,9 +596,10 @@ class Student:
             return False
         return True
                     
-    def hsGPA(self):
+    def hsGPA(self,courseList=[]):
+        if len(courseList) == 0: courseList = self.hsCourses
         grades=[]
-        for c in self.hsCourses:
+        for c in courseList:
             grs = c.getGrades()
             if grs == None:
                 pass
@@ -756,10 +757,11 @@ class HSCourse:
         else: 
             return False
 
-    def weightedGrade(self):
+    def weightedGrade(self,subject='Math'):
         grades = self.getGrades()
         if (grades != None) and (len(grades)>0):
-            if self.isAPMath():
+            #and (int(self.hs_grade_level)<12):
+            if self.isAPMath() and (subject == 'Math'):
                 return (sum(grades)/len(grades))+1
             elif self.honors:
                 return (sum(grades)/len(grades))+0.5
