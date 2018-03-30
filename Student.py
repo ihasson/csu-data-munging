@@ -29,6 +29,7 @@ class Student:
     def __init__(self,sid):
         self.sid = sid   # Must be base64 encoded and uniquely identifying.
         self.hsMath = [] # each course
+        #self.hsCourses = self.hsMath # need this should be deprecated.
         self.hsEnglish = []
         self.hsOldCNames = [] # Course names prior to labeling.
         #self.collegeSeq = [] # old list format
@@ -79,7 +80,7 @@ class Student:
     def grd12math(self):
         """ by label """
         out = {}
-        for e in self.hsCourses:
+        for e in self.hsMath:
             if e.hs_grade_level == '12':
                 out[e.course_label] = self.sid
         if len(out) == 0: #print('no course name?!?')
@@ -90,7 +91,7 @@ class Student:
         """ by category """
         out = {}
         labelmap = Label_Maps.hs_label_categ
-        for e in self.hsCourses:
+        for e in self.hsMath:
             if e.hs_grade_level == '12':
                 out[labelmap[e.course_label]] = self.sid
         if len(out) == 0: #print('no course name?!?')
@@ -106,7 +107,7 @@ class Student:
         returns a set containing 'None'.
         """
         out = set()
-        for e in self.hsCourses:
+        for e in self.hsMath:
             if e.hs_grade_level == grade_level:
                 out.add(e.course_label)
         if len(out) == 0:
@@ -125,9 +126,16 @@ class Student:
             return categorized[0]
         
 ## gets hs courses
-    def hs_courses(self, labeled=True):
+    def hs_courses(self, labeled=True, subject='Math'):
         out = {}
-        for e in self.hsCourses:
+        courseslist=None
+        if( subject=='Math' ):
+            courseslist=self.hsMath
+        elif (subject == 'English'):
+            courseslist=self.hsEnglish
+        else:
+            return 'No subject specified'
+        for e in courseslist:
             out[e.course_label] = self.sid
         return out
 
@@ -190,16 +198,26 @@ class Student:
    # def gpa(self):
 
 ## returns a list of courseNames
-    def hs_course_names(self):
+    def hs_course_names(self,subject):
+        hscourses =None
+        if subject == 'Math':
+            hscourses = self.hsMath
+        elif subject == 'English':
+            hscourses = self.hsEnglish
+        else:
+            hscourses=None # not sure what should do so I guess an
+                           # exception will wind up being thrown
         lsOfCnames = []
-        for course in self.hsCourses:
+        for course in hscourses:
             lsOfCnames.append(course.getCourseName())
         return lsOfCnames
 
 ## Sets the courselabels for all hs courses using the function provided
 # 
     def set_hs_course_labels(self,matchfun):
-        for h in self.hsCourses:
+        courselist = self.hsMath.copy()
+        courselist.extend(self.hsEnglish)
+        for h in courselist:
             h.set_course_label(matchfun)
 
     def fourYearGrad(self):
@@ -620,12 +638,24 @@ class Student:
     def weighted_hs_Math_GPA(self):            
         w_grades = [] #[course.weightedGrade() for course in self.hsCourses]
         for course in self.hsCourses:
-            if course.weightedGrade() != None:
+            if course.weightedGrade(subject='Math') != None:
                 w_grades.append(course.weightedGrade())
         if len(w_grades)>0:
             return sum(w_grades)/len(w_grades)
         else:
             return None
+
+## weighted GPA requires persubject course weighting.
+    def weightedGPA(self,courseList,subject):            
+        w_grades = [] #[course.weightedGrade() for course in self.hsCourses]
+        for course in courseList:
+            if course.weightedGrade(subject) != None:
+                w_grades.append(course.weightedGrade(subject))
+        if len(w_grades)>0:
+            return sum(w_grades)/len(w_grades)
+        else:
+            return None
+    
 
     def firstMajor(self):
         if len(self.majors) > 0:
@@ -757,11 +787,19 @@ class HSCourse:
         else: 
             return False
 
-    def weightedGrade(self,subject='Math'):
+## There are two AP English courses.
+#   AP English Literature and Composition
+#   AP English Language and Composition
+    def isAPEnglish(self):
+       return False 
+
+    def weightedGrade(self,subject):
         grades = self.getGrades()
         if (grades != None) and (len(grades)>0):
             #and (int(self.hs_grade_level)<12):
             if self.isAPMath() and (subject == 'Math'):
+                return (sum(grades)/len(grades))+1
+            elif self.isAPEnglish() and (subject == 'English'):
                 return (sum(grades)/len(grades))+1
             elif self.honors:
                 return (sum(grades)/len(grades))+0.5

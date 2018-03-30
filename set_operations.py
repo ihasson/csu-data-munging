@@ -26,7 +26,9 @@ def filter_has_hs_and_college(data):
     l = {}
     for s in data:
         st = data[s]
-        if ((len(st.hsCourses) > 0) and (len(st.cCourses) > 0) and 
+        if ((len(st.hsMath) > 0) and 
+                (len(st.hsEnglish)> 0) and
+                (len(st.cCourses) > 0) and 
                 (int(st.cohort_term) >= 2040) ):
             l[s] = st
     return l
@@ -95,7 +97,7 @@ def find_harvard_students(sdct={}):
     return harvard_students
 
 # maybe there should be a class for all of this.
-def set_hs_course_labels(sdct):
+def set_hs_course_labels(sdct,subject='Math'):
     mfun = cm.construct_matchfun()
     for k,s in sdct.items() : s.set_hs_course_labels(mfun)
     return sdct
