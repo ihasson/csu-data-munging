@@ -473,7 +473,9 @@ class Student:
                         search(treeDct[testnames[0]],testnames[1:],accum)
                     else:
                         pass
-                except: print(self.sid)
+                except: 
+                    print("get score failed " + self.sid)
+                    return None
             return None
     
         acc = []
@@ -517,7 +519,9 @@ class Student:
             returns -1 if no math SAT
         """
         best = -1
-        if 'SAT' in self.exams_tree:
+        if self.exams_tree == None:
+            return None   #has no exams!
+        elif 'SAT' in self.exams_tree:
             for test_date,subtests in self.exams_tree['SAT'].items():
                 if 'Math' in subtests:
                     if int(subtests['Math']) > best:
@@ -558,36 +562,73 @@ class Student:
     def bestSATComposite(self):
         best = -1
         if self.hasSAT():
-            for test__date,subtests in self.exams_tree['SAT'].items():
+            for test_date,subtests in self.exams_tree['SAT'].items():
                 if 'Math' in subtests and 'Verbal' in subtests:
                     c = int(subtests['Math'])+int(subtests['Verbal'])
                     if c > best:
                         best = c
-        if best == -1: return None
+        if best == -1: 
+            if self.hasSAT():
+                tests = []
+                for test_date,subtests in self.exams_tree['SAT'].items():
+                    for subtest,score in subtests.items():
+                        tests.append([test_date,subtest,score])
+                print(tests)
+                print(self.sid)
+                compositescore = []
+                for t in tests:
+                    for k in tests:
+                        if ((abs(int(t[0]) - int(k[0])) <= 130) and 
+                            (t[1] == 'Math' and k[1] == 'Verbal')):
+                            compositescore.append(int(t[2]) + int(k[2]))
+                return max(compositescore)
+            return None
         else: return best
     
     def bestSATCompositeWithACT(self):
         """ Takes ACT scores and converts them to SAT before figuring out
             which score is best.
         """
-        best = self.bestSATComposite()
+        try: 
+            best = self.bestSATComposite()
+        except ValueError:
+            best = None
         acts = self.getScores2(['ACT','ANY','Composite'])
         sat_from_act = list(map(lambda x: Label_Maps.actTOsat[x],acts))
         if len(sat_from_act) > 0:
-            best_satact = max(map(lambda x: int(x),sat_from_act))
-            if best_satact > best: best = best_satact
+            try :
+                best_satact = max(map(lambda x: int(x),sat_from_act))
+                if best == None:
+                    return best_satact
+                else:
+                    if best_satact > best: 
+                        best = best_satact
+                return best
+                
+            except TypeError:
+                print(self.sid, " fail.") 
+                print(acts)
+                print(best)
+                print(sat_from_act)
+            except ValueError:
+                return None
         return best
     
     def ACTBetterThanSAT(self):
         try:
-            if self.hasSAT():
+            if self.hasSAT() and self.hasACT():
                 sat = self.bestSATComposite()
                 act = self.bestSATCompositeWithACT()
                 return act > sat
+            elif self.hasSAT():
+                return False
+            elif self.hasACT():
+                return True
             else: 
-                return self.hasACT()
-        except:
-            return True
+                #print(self.sid, "  has no sat or act")
+                return None
+        except ValueError:
+            return None
 
     def hasELM(self):
         if self.hasExams():
@@ -675,7 +716,7 @@ class Student:
             for e in self.hsMath:
                 courses.append(categories[e.course_label])
             return(max(map(lambda x: Label_Maps.hs_label_cat_ranked[x],courses)))
-        except:
+        except KeyError:
             print("error in took_math_beyon_alg2 "+self.sid)
             return None
 
@@ -725,6 +766,13 @@ class HSCourse:
         try:
             if int(self.hs_grade_level) <9:
                 return None
+        except ValueError:
+            #print(self.sid," no hs_grade_level")
+            if self.hs_grade_level == None:
+                return None
+            else:
+                raise
+        finally:
             grds = [self.fall_gr,
                     self.spr_gr,
                     self.summer_gr,
@@ -742,11 +790,15 @@ class HSCourse:
                 return None
             else:
                 return grds
-        except:
-            print(self.sid,"  getGrade failed")
-            global get_grade_failed
-            get_grade_failed.append(self.sid)
-            return None
+#        except ValueError:
+#            if self.hs_grade_level == None: # this case doesn't seem to happen
+#                print(self.sid, " missing hs_grade_level")
+#            else:
+#                print(self.sid,"  getGrade failed  ")
+#                print([self.fall_gr, self.spr_gr, self.summer_gr, self.sum2_gr]) 
+#            global get_grade_failed
+#            get_grade_failed.append(self.sid)
+#            return None
 
     def showAll(self):
         print(str(self.descr),str(self.hs_grade_level))

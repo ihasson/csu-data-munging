@@ -480,8 +480,12 @@ def first_math(dataset):
         }
     return d1
 
+weakfilterrules = [lambda x: int(x.cohort_term)>=2067, 
+        lambda x: x.weighted_hs_Math_GPA() != None]
+#        lambda x: x.first_math_course() != None, 
+#        lambda x: x.hasExams()]
 
-def big_table(dataset):
+def big_table(dataset, filter_rules=None):
     def getKeys(s):
         a = s.grd12math()
         return list(a.keys())
@@ -491,26 +495,43 @@ def big_table(dataset):
     def mathcount(ls):
         return len(set(map(lambda x: x.descr, ls)))
 
-    data = and_filter(dataset, [lambda x: x.first_math_course() != None,
-        lambda x: x.hasExams(),
-        lambda x: x.weighted_hs_Math_GPA() != None ,
-        lambda x: x.weighted_hs_Math_GPA() >= 0,
-        lambda x: x.max_hs_math_level() != None,
-        lambda x: x.max_hs_math_level() > 2,
-        lambda x: int(x.cohort_term) >= 2067])
+    if filter_rules == None:
+        data = and_filter(dataset, [lambda x: x.first_math_course() != None,
+            lambda x: x.hasExams(),
+            lambda x: x.weighted_hs_Math_GPA() != None ,
+            lambda x: x.weighted_hs_Math_GPA() >= 0,
+            lambda x: x.max_hs_math_level() != None,
+            lambda x: x.max_hs_math_level() > 2,
+            lambda x: int(x.cohort_term) >= 2067])
+    else :
+        data = and_filter(dataset, filter_rules)
 
     def cutoff(n,m,s):
         try:
             if m<=n: return None
             else: return m
         except:
-            print(s.sid)
+            if m == None: 
+                return None
+               # print(s.sid, " No time to grad")
+            else: raise
+    def first_math_grade_letter(student):
+        try:
+            return student.first_math_course().grade_letter
+        except:
+            return None
+    def first_math_grade_val(student):
+        try:
+            return student.first_math_course().grade_val
+        except:
+            return None
+
     d1={
         "first_math":{k:s.first_math() for k,s in data.items()},
         "first_math_grade":
-            {k:s.first_math_course().grade_val for k,s in data.items()},
+            {k:first_math_grade_val(s) for k,s in data.items()},
         "grade_letter":
-            {k:s.first_math_course().grade_letter for k,s in data.items()},
+            {k:first_math_grade_letter(s) for k,s in data.items()},
         "SAT_math":{k:cutoff(-1,s.bestSATMath(),s) for k,s in data.items()},
         "ELM":{k:s.bestELM() for k,s in data.items()},
         #"SAT_Composite":{k:cutoff(-1,s.bestSATComposite(),s) 
@@ -564,7 +585,9 @@ def big_table(dataset):
         "HS_English_GPA": # need to change. 
             {k:s.weightedGPA(s.hsEnglish,'English') for k,s in data.items()},
         "HS_English_Course_count":
-            {k:len(s.hsEnglish) for k,s in data.items()}
+            {k:len(s.hsEnglish) for k,s in data.items()},
+        "SAT/ACT_Composite":
+            {k:s.bestSATCompositeWithACT() for k,s in data.items()}
         }
     return d1
 

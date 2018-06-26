@@ -342,7 +342,6 @@ def MathCategories3(df): #must be a pandas data frame
         (df["AP_Calc_AB_S"] >= 3  ) |
         (df["AP_Calc_BC_S"] >= 3  ) |
         (df["AP_Statistics"] >=3  ) ) 
-        & ((df["ACT_Math"] > 0) | (df["SAT_math"] > 0))
         & (df["HS_Math_GPA"] > 0))
 
     df["CATEGORY_2"] =(  (
@@ -351,21 +350,21 @@ def MathCategories3(df): #must be a pandas data frame
             & (df["max_hs_math_level"] >= 11.0)) | # this could be a problem
         ((df["HS_Math_GPA"] >= 3.5) | (df["HS_GPA"] >= 3.7) 
             | ((df["HS_GPA"] >= 3.0)&(df["HS_Math_Course_count"] >= 5)))) 
-        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"]> 0))
-        )
+        & (df["HS_Math_GPA"]> 0))
+        
 
     df["CATEGORY_3"] = (( 
         ((df["ACT_Math"] >= 20) | 
          (df["SAT_math"] >= 490) ) |
         (df["HS_Math_GPA"] >= 3.3) |
         (df["HS_GPA"] >= 3.0) )
-        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"] > 0)))
+        &  (df["HS_Math_GPA"] > 0))
 
     df["CATEGORY_4"] = (
         ~(  df["CATEGORY_1"] |
             df["CATEGORY_2"] |
             df["CATEGORY_3"]) 
-        & (((df["ACT_Math"] > 0) | (df["SAT_math"] > 0)) & (df["HS_Math_GPA"]> 0)))
+        & (df["HS_Math_GPA"]> 0))
 
     df["CAT_1"] = df["CATEGORY_1"]*1
     df["CAT_2"] = (df["CATEGORY_2"] & ~(df["CATEGORY_1"]))*1
@@ -383,3 +382,18 @@ def MathCategories3(df): #must be a pandas data frame
     df["MCAT"] = df.apply(rank,axis=1)
 
     return df
+
+gpals = [i/100 for i in range(200,300)]
+gpals.reverse()
+satls = [i for i in range(510,1310,10)]
+satls.extend([i for i in range(540,1310,40)])
+satls.sort()
+eligibility_index = list(zip(gpals, satls))
+
+def is_eligible(gpa,sat):
+    if gpa >= 3.0:
+        return True
+    for g,s in eligibility_index:
+        if (gpa >= g) and (sat >= s):
+            return True
+    return False
