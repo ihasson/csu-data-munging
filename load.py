@@ -21,7 +21,7 @@ def loadFTF():
 def buildFTFDataSet():
     """ a nice function to construct the FTF data set"""
     matchFun = courseMatcher.construct_matchfun()
-    data = rd.read_Large_HS()
+    data = rd.read_Large_HS(subject='Math')
     data = rd.read_Large_HS(dct=data,
                             filename='data/hs-english.txt',
                             subject='English',
@@ -52,7 +52,7 @@ def buildFTFDataSet():
     f.close()
     return data
 
-
+# needs to be updated
 def build_BIG_DataSet():
     data = rd.readall()
     mf = courseMatcher.construct_matchfun()

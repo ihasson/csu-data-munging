@@ -83,10 +83,11 @@ def readAndClean(fileList):
                 #print( cname +"\t" + closest )
     return dataset
 
-## does some cleaning on text to reduce howmuch needs to be dealt with.
+## does some cleaning on text to reduce how much needs to be dealt with.
 def justClean(string):
     try:
         cname = string
+        cname = cname.replace('IV','4')
         cname = cname.replace('III','3')
         cname = cname.replace('II','2')
         cname = cname.replace('iii','3')
@@ -101,6 +102,47 @@ def justClean(string):
         return cname
     except:
         print(string)
+
+## need to define a normal form for english descriptions.
+# Best idea so far:
+#  (AP/Honors/IB) (bulk of name) (level i.e. number)
+def cleanEnglish(string):
+    cname = string
+    cname = cname.lower()
+    # roman numerals
+    cname = re.sub(r"iv\W?([ab]$)",r"4 \1",cname)
+    cname = re.sub(r"iii\W?([ab]$)",r"3 \1",cname)
+    cname = re.sub(r"ii\W?([ab]$)",r"2 \1",cname)
+    cname = re.sub(r"i\W?([ab]$)", r"1 \1",cname)
+
+    cname = re.sub(r"\siv(\s|$|\W)",r" 4\1",cname)
+    cname = re.sub(r"\siii(\s|$|\W)",r" 3\1",cname)
+    cname = re.sub(r"\sii(\s|$|\W)",r" 2\1",cname)
+    cname = re.sub(r"\si(\s|$|\W)", r" 1\1",cname)
+    cname = re.sub("\(.*\)","",cname)
+    cname = re.sub("common core","",cname)
+    cname = re.sub("honors","",cname)
+    cname = re.sub("ap ","",cname)
+    cname = re.sub("a[\\\ +)(/,s-]b",r"ab",cname)
+    cname = re.sub(r"([0-9])([a-zA-Z]{2})$",r"\1 \2",cname)
+
+#    cname = re.sub("h(\.)? ","",cname)
+    
+    # The next part is to check for substrings definitely indicating "honors".
+    # If any or maybe exactly one of these checks is true then remove the
+    # indicating substring and then place '(honors)' at the front of the course 
+    # name.
+
+    #very few examples of ap courses where "AP" not in beginning.
+    #cname = re.sub(r"ap (eng|lang|lit)(.*)",r"AP \1\2",cname)
+    #maybe should rather capture the 
+
+    cname = re.sub("\(.*\)$","",cname)
+    cname = re.sub(r"^h ","",cname)
+    cname = re.sub(r"([0-9])([a-zA-Z]{2})$",r"\1 \2",cname)
+    cname = re.sub(r"\s\s+",r"\s",cname)
+    cname = cname.strip() 
+    return cname
 
 ## I think this is deprecated but not sure.
 #   Takes a string and finds the closest match from a list of strings.

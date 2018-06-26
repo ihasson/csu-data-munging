@@ -615,7 +615,7 @@ class Student:
         return True
                     
     def hsGPA(self,courseList=[]):
-        if len(courseList) == 0: courseList = self.hsCourses
+        if len(courseList) == 0: courseList = self.hsMath
         grades=[]
         for c in courseList:
             grs = c.getGrades()
@@ -637,9 +637,9 @@ class Student:
 
     def weighted_hs_Math_GPA(self):            
         w_grades = [] #[course.weightedGrade() for course in self.hsCourses]
-        for course in self.hsCourses:
+        for course in self.hsMath:
             if course.weightedGrade(subject='Math') != None:
-                w_grades.append(course.weightedGrade())
+                w_grades.append(course.weightedGrade('Math'))
         if len(w_grades)>0:
             return sum(w_grades)/len(w_grades)
         else:
@@ -672,7 +672,7 @@ class Student:
     def max_hs_math_level(self,categories=Label_Maps.hs_label_categ):
         try:
             courses = []
-            for e in self.hsCourses:
+            for e in self.hsMath:
                 courses.append(categories[e.course_label])
             return(max(map(lambda x: Label_Maps.hs_label_cat_ranked[x],courses)))
         except:

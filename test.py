@@ -16,3 +16,7 @@ def check_mergeable():
         if e in dict1:
             dict3[e] = e
     return dict1,dict2,dict3
+
+from analysis import *
+
+a = big_table(DATASET)

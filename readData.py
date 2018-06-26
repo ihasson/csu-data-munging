@@ -95,7 +95,7 @@ def read_High_School_Data(filesList):
                                                 cleanHSCstr(vals[4*i+0])), 
                                     vals[4*i+1],
                                     vals[4*i+2])
-                        newStudent.hsCourses.append(acourse)
+                        newStudent.hsMath.append(acourse)
                     studentList.append(newStudent)
     return studentList
 
@@ -167,7 +167,7 @@ def mergeHSandColSeq(hs,cseq):
             indexNumb += 1
             csunStudent = Student(student)
             csunStudent.squeezedID = indexNumb
-            csunStudent.hsCourses = hs[student].hsCourses
+            csunStudent.hsMath = hs[student].hsMath
             csunStudent.hsOldCNames = hs[student].hsOldCNames
             csunStudent.collegeSeq = cseq[student].collegeSeq
             mergedDict[student] = csunStudent
@@ -210,7 +210,7 @@ def constructDataTable():
     students = makeStList()
     dataForMatching = []
     for stu in students:
-        dataForMatching.append([stu.oldCnames[0],stu.hsCourses[0]])
+        dataForMatching.append([stu.oldCnames[0],stu.hsMath[0]])
 
 
 ## reads a particular formatted file of student transcripts
@@ -244,8 +244,8 @@ def read_Large_HS(filename='data/hs-math.csv',dct={},subject=None,
             c_inf.High_School      = str.upper(st_inf[11])
             c_inf.course_source    = st_inf[12]
             #c_inf.course_label     = somecoursematcher( descr )
-            if subject == None:
-                st.hsCourses.append(c_inf)
+            if subject == 'Math':
+                st.hsMath.append(c_inf)
             elif subject == 'English':
                 st.hsEnglish.append(c_inf)
             else:
@@ -464,7 +464,7 @@ def read_Exams(fname='data/full-exams-database.txt',dct={},header=False):
 ## a read all the data I have function
 def readall():
     data = {}
-    data = read_Large_HS(dct=data)
+    data = read_Large_HS(dct=data,subject='Math')
     read_College_Courses(dct=data)
     #data = read_College_Seq(dct=data # possibly need to reenable this.)
     data = read_Progress(dct=data)

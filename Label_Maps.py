@@ -39,6 +39,7 @@ class Label_Maps:
         'trig_and_precalc': 'Calculus Prep',
         'trigonometry': 'Calculus Prep',
         'unknown': 'Other',
+        'old_data':'Other',
         'None': 'No Math'
         }
    
@@ -57,7 +58,7 @@ class Label_Maps:
 
 # Provides numeric values for grade strings.
 # Need to change scores for non-letter 
-    gradesMap = {'A+':4.0, 'A':4.0,'A-':3.7, #need to update the grade values
+    gradesMap = {'A+':4.0, 'A':4.0,'A-':3.7,
                 'B+':3.3,'B':3.0,'B-':2.7,
                 'C+':2.3,'C':2.0,'C-':1.7, 
                 'D+':1.3,'D':1.0,'D-':0.7,
@@ -128,3 +129,44 @@ class Label_Maps:
         '12': '590',
         '11': '530',
         }; actTOsat.update({str(x) : '400' for x in range(0,11)})
+
+
+
+    ap_courses = {"AP Research",
+        "AP Seminar",
+        "Art History",
+        "Biology",
+        "Calculus AB",
+        "Calculus BC",
+        "Chemistry",
+        "Chinese Language and Culture",
+        "Computer Science A",
+        "Computer Science Principles",
+        "English Language and Composition",
+        "English Literature and Composition",
+        "Environmental Science",
+        "European History",
+        "French Language and Culture",
+        "German Language and Culture",
+        "Government and Politics (Comparative)",
+        "Government and Politics (US)",
+        "Human Geography",
+        "Italian Language and Culture",
+        "Japanese Language and Culture",
+        "Latin",
+        "Macroeconomics",
+        "Microeconomics",
+        "Music Theory",
+        "Physics 1: Algebra-Based",
+        "Physics 2: Algebra-Based",
+        "Physics C: Electricity and Magnetism",
+        "Physics C: Mechanics",
+        "Psychology",
+        "Spanish Language and Culture",
+        "Spanish Literature and Culture",
+        "Statistics",
+        "Studio Art Drawing",
+        "Studio Art 2-D Design",
+        "Studio Art 3-D Design",
+        "US History",
+        "World History"}

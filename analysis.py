@@ -488,6 +488,8 @@ def big_table(dataset):
     def bool_to_int(x): 
         if x: return 1 
         else: return 0
+    def mathcount(ls):
+        return len(set(map(lambda x: x.descr, ls)))
 
     data = and_filter(dataset, [lambda x: x.first_math_course() != None,
         lambda x: x.hasExams(),
@@ -523,6 +525,7 @@ def big_table(dataset):
         "GRD12Math":{k:s.hsMathCategory('12') for k,s in data.items()},
         "HS_Math_GPA_UnWeighted":{k:s.hsGPA() for k,s in data.items()},
         "HS_Math_GPA":{k:s.weighted_hs_Math_GPA() for k,s in data.items()},
+        "HS_Math_Course_count":{k:mathcount(s.hsMath) for k,s in data.items()},
         "ACTvsSAT":{k:s.ACTBetterThanSAT() for k,s in data.items()},
         "Cohort":{k:s.cohort_term for k,s in data.items()},
         "units_total":{k:s.units_total() for k,s in data.items()},
@@ -559,7 +562,9 @@ def big_table(dataset):
             {k:s.getBestScore2(['AP','ANY','English Lang & Comp'])
                     for k,s in data.items()},
         "HS_English_GPA": # need to change. 
-            {k:s.weighted_hs_Englis_GPA(s.hsEnglish) for k,s in data.items()},
+            {k:s.weightedGPA(s.hsEnglish,'English') for k,s in data.items()},
+        "HS_English_Course_count":
+            {k:len(s.hsEnglish) for k,s in data.items()}
         }
     return d1
 
