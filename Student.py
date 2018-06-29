@@ -720,6 +720,16 @@ class Student:
             print("error in took_math_beyon_alg2 "+self.sid)
             return None
 
+    def upperdiv_units_passed(self):
+        units = 0
+        for k,v in self.ccDict.items():
+            for e in v:
+                if (re.match("[A-Za-z ]+[345][0-9][0-9][ A-Za-z]*",e.name) 
+                    and (e.passed == 1)):
+                    units += e.units
+        return(units)
+
+
 ## Unlike other elements of student this is meant to be modified.
 #   The point of this class is to collect student application data
 #   to use machine learning on.
