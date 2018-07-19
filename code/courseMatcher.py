@@ -35,6 +35,7 @@ calculusReadiness = {'calculus' 'tigonometry' 'precalc' 'trig_and_precalc'
         'inter_alg' :'unknown',
         'no_math':'no_math'}
 
+# this is probably no longer needed.
 def levenshteinDist(stringA,stringB):
     try:
         matrix = [[None for col in range(0,len(stringB)+1)] 
@@ -60,7 +61,7 @@ def levenshteinDist(stringA,stringB):
         print("stringA" + stringA)
         print("stringB" + "")
 
-
+# This one should be deprecated now and probably needs to be removed.
 # read data and also find what appears to be the closest match for the 
 # course name.
 def readAndClean(fileList):
