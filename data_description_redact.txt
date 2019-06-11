@@ -1,0 +1,135 @@
+Note: some examples have been redacted from this file so that it can be uploaded.
+
+To Do: 
+-Need to decide whether to restrict to only 2xx7 cohorts.
+-Need to decide what to do about invalid grades.
+-Need to decide on lines where highschool name includes "Junior" or "Middle"
+
++ Since at least 15 courses are needed to fill A-G will probably want to require
+    that students have taken at least 15 courses.
+Will probably require courses have valid grades or X1 or X2 to be counted 
+    towards the 15. X1 and X2 are allowed because they are typically used for 
+    the placeholder of senior year grades.
+
+--------------------------------------------------------------------------------
+Data description:
+Using cohorts file as master list of students.
+Using incoming students with cohort 'FTF' and term >= 2067.
+    +52826 students satisfy this condition.
+    +the hsdata is missing 3260 students that are in the cohorts file. 
+Thus the number of students for which there is information is 49566.
+
+-need to also narrow down to the students who took a course at csun.
+
++11734 students have no high school(s), 37832 students have at least one.
++4301 students attended "high school" containing "middle" or "junior" in 
+    their names. i.e. they included middle school information.
++school names are truncated at 20 characters.
++course names it appears used to be truncated at 20 characters.
+E.G. United States Histor
+    - small numbers of exceptions appear to have made their way into the 
+        data base likely meaning that it was the application and not the 
+        actual database doing the truncating.
+    - This restriction appears to have been removed in 2013.
+
++ Of the 49566 students in our data set only 8 are missing from the exams data.
+    - having checked for other missing information regarding those 8 nothing 
+        of interest.
+
++ In the file containing seniority levels by term along with start end and 
+  graduation date.
+    - 22 lines have a missing seniority level.(none of the 49566 have the problem) 
+    - there are 8 students who graduated in the spring of 2014 and 
+    - there are no students who graduated in the summer or fall of 2014.
+    - usually there will be > 3000 graduations for the spring,
+        around 500 for summer and between 1000 and 2000 for the fall.  
+    - fall 2013 is also unusually low at 843
+    - spring 2015 is 0
+    - for reference spring 2013 is 3865, summer 2013 is 608.
+    - furthermore fall 2015 is 2027 and spring 2016 is 4376.
+
++ 2398 students have no information in the csun courses and grades table.
+    - all of the 8 missing students from the exams data have lines in the 
+        csun courses and grades table.
+    - most of these missing students started in summer or fall of 2016 and 
+        their last term was in spring 2017.
+    - the missing fall of 2016 data is reasonable because of when the data was
+        obtained. The last semester in 2017 part is still strange.
+    - 25 of the students with missing csun course data start before 2016.
+
+* as a result of students being missing from the csun courses and grades table 
+    the student count is 47168
+
++ 1 student in the dataset is missing from the majors. WQ3aNBWPlQAXf0huvuQKYg==
+  - looking at this student's grades they most likely dropped out after their 
+    first semester.
+# it seems I excluded that one person.
+# it also seems that students lacking any valid math grades also got culled.
+# there is now 79 students missing from the data set due to a lack of 
+# valid grades. E.G. most of them have Ps, X1s, and X2s
+# 47088 should be the total number of students whose data can be used.
+### NEED TO DOUBLE CHECK THE PARTS PRECEDED WITH #
+
+--------------------------------------------------------------------------------
+More on math placement:
+I don't know what the rules are regarding the MPT however it is being used for 
+math placement along side the categories and was used in the data set too.
+
+Unfortunately only 495 students in the data set have taken the MPT.
+
+--------------------------------------------------------------------------------
+Students that do not appear to have taken courses will be excluded from any 
+analysis of student success at csun.
+Can't really check things regarding placement for them either.
+
+--------------------------------------------------------------------------------
+Notes:
+Some students put A+ as their grade despite that not being a real grade.
+a-g lists a minimum of 15 courses as required for admissibility.
+
+------------------------------------------------------------------------
+all grade values: 
+- 7 students had the field separator character included in a school name
+ resulting in part of their school's name being in the grades column.
+
+A, A-, A+, AA, AI, AM, B, B-, B+, BB, C, C-, C+, CB, CC, CF, COBACH, COC, CR, D, D-, D+, DT, E, ESIMA, F, FUTERS HS, G, H, I, II, IP, J, L, M, ME, MI, MM, N, NC, NM, NW, O, OFL BALDWIN PRK, P, R, S, School 641, St.Thomas, T, T1, T2, TA, TB, TC, TD, TF, U, V, W, Washington HS, X, X1, X2, X3, Y
+--------------------------------------------------------------------------------
+grade values of the students in the 47168 student set.
+
+A, A-, A+, B, B-, B+, C, C-, C+, COC, D, D-, D+, F, I, NC, P, 
+T1, T2, TA, TB, TC, TD, TF, U, V, X1, X2, Y
+
+--------------------------------------------------------------------------------
+Aberrant line in the hsdata, examples:
++ It appears that in the vast majority of cases where too many field separators
+   the extra-field separators are in the course names. In a small minority the 
+   extra field separator characters are in the school name.
+
+<Line Redacted>
+- not sure if slipped in more fields than expected.
+- maybe professor Shapiro combined files with differnt formats?
+- potentially someone further up the line did that.
+
+<Line Redacted>
+
+
+--------------------------------------------------------------------------------
+the csun_courses and grades file has 10's of thousands of rows with duplicated in
+their entries. not sure if caused by prof Shapiro or by CSUN.
+There are also instances of students taking MATH92 and MATH93 in the same term 
+which isn't supposed to be allowed.
+
++ LABS will be ignored so that non-remedial classes can consistently have letter 
+grades.
+
++ 'RP' is a "grade value" which,I assume, stands for repeat or replace. 
+  It replaces old grades when a course is repeated, sometimes. 
+  Replacement of prior grades for courses retaken with 'RP' is not done
+  consistently. As such if a student retakes a course it could have the original
+    grade or an 'RP'.   
+
+Need to decide what to do about taking multiple cousres in the same semester 
+when those two courses aren't supposed to be taken at the same time.
+
+Can also just ignore the issue entirely and just allow students to have taken multiple courses and then on top of that count students by units.
+
