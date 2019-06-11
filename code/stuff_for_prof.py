@@ -145,36 +145,35 @@ def EnglishCategories(df):
     df["E_Category_1"] = ((
         (df["AP_English_Comp_&_Lit."] >= 3) |
         (df["AP_English_Lang_&_Comp"] >= 3)) 
-        & ((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0))
-        & (df["HS_English_GPA"] > 0))
+        
+        & (df["HS_GPA"] > 0))
                             
     df["E_Category_2"] =( ~(df["E_Category_1"]) & (
             (df["SAT_Verbal"] >= 500)  |
             (df["ACT_English"] >= 22) |
-            (df["HS_English_GPA"] >= 3.3)) 
-            & (((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0)) & 
-                (df["HS_English_GPA"] > 0)))
+            (df["HS_GPA"] >= 3.3)) 
+            &  
+                (df["HS_GPA"] > 0))
 
     df["E_Category_3"] =( ~(df["E_Category_1"] | df["E_Category_2"]) & (
             ((df["SAT_Verbal"] < 500) & 
              (df["SAT_Verbal"] >= 460)) |
             ((df["ACT_English"] >= 19) & (df["ACT_English"] <22 )) |
-            ((df["HS_English_GPA"] >= 3.0) &
-                (df["HS_English_GPA"] < 3.3))) & 
-            (((df["ACT_English"] > 0) | (df["SAT_Verbal"] > 0)) & 
-                (df["HS_English_GPA"] > 0)))
+            ((df["HS_GPA"] >= 3.0) &
+                (df["HS_GPA"] < 3.3))) & 
+            (  df["HS_GPA"] > 0))
 
     df["E_Category_4"] = ~(
         (df["AP_English_Comp_&_Lit."] >= 3) |
         (df["AP_English_Lang_&_Comp"] >= 3) | 
-        (df["HS_English_GPA"] >= 3.0) |
+        (df["HS_GPA"] >= 3.0) |
         (df["ACT_English"] >= 19) |
         (df["SAT_Verbal"] >= 460) )
     df["E_C1"] = (df["E_Category_1"])*1
     df["E_C2"] = (df["E_Category_2"])*1
     df["E_C3"] = (df["E_Category_3"])*1
     df["E_C4"] = (df["E_Category_4"])*1
-    df["E_C5"] = (~(df["E_Category_4"] |
+    df["E_C5"] = (~(df["E_Category_4"] |  
             df["E_Category_3"] | df["E_Category_2"] | df["E_Category_1"]))*1
 
     def engcatcol(c1,c2,c3,c4,c5):
@@ -319,7 +318,7 @@ def MathCategories2(df): #must be a pandas data frame
     df["MCAT"] = df.apply(rank,axis=1)
 
     return df
-
+#use this one.
 def MathCategories3(df): #must be a pandas data frame
     #df = pd.DataFrame(big_table(data))
 ### might have gotten 'and' and or mixed up.

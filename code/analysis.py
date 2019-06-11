@@ -587,7 +587,9 @@ def big_table(dataset, filter_rules=None):
         "HS_English_Course_count":
             {k:len(s.hsEnglish) for k,s in data.items()},
         "SAT/ACT_Composite":
-            {k:s.bestSATCompositeWithACT() for k,s in data.items()}
+            {k:s.bestSATCompositeWithACT() for k,s in data.items()},
+        "UpperDiv_units_passed":
+            {k:s.upperdiv_units_passed() for k,s in data.items()}
         }
     return d1
 

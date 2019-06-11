@@ -144,7 +144,8 @@ class Student:
         return self.grad_term != '9999'
 
 ## gpa_raw e.g. not adjusted for things like retakes
-    def gpa_raw(self):
+## I think this is for college courses
+    def gpa_raw(self): 
         grade_sum = 0 #grade val times units
         unit_sum = 0
         for c in self.cCourses:
@@ -725,7 +726,7 @@ class Student:
         for k,v in self.ccDict.items():
             for e in v:
                 if (re.match("[A-Za-z ]+[345][0-9][0-9][ A-Za-z]*",e.name) 
-                    and (e.passed == 1)):
+                    and (e.grade_val >= 1.7)):
                     units += e.units
         return(units)
 

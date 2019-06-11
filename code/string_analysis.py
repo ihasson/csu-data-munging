@@ -1,3 +1,9 @@
+########### 
+# Unfinished:
+# For using machine learning techniques to do classification.
+
+
+
 import matplotlib.pyplot as plt
 from fuzzywuzzy import StringMatcher as strmat
 import re
